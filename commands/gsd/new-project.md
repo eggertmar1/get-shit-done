@@ -33,6 +33,7 @@ This is the most leveraged moment in any project. Deep questioning here means be
 @~/.claude/get-shit-done/references/ui-brand.md
 @~/.claude/get-shit-done/templates/project.md
 @~/.claude/get-shit-done/templates/requirements.md
+@~/.claude/get-shit-done/workflows/migrate-to-multiproject.md
 
 </execution_context>
 
@@ -42,12 +43,30 @@ This is the most leveraged moment in any project. Deep questioning here means be
 
 **MANDATORY FIRST STEP — Execute these checks before ANY user interaction:**
 
-1. **Abort if project exists:**
+1. **Check for existing planning structure:**
    ```bash
-   [ -f .planning/PROJECT.md ] && echo "ERROR: Project already initialized. Use /gsd:progress" && exit 1
+   # Check for flat structure (old single-project)
+   FLAT_STRUCTURE=$([ -f .planning/PROJECT.md ] && [ ! -d .planning/projects ] && echo "yes")
+
+   # Check for nested structure (multi-project)
+   NESTED_STRUCTURE=$([ -d .planning/projects ] && echo "yes")
+
+   # Check for completely initialized project (nested structure with PROJECT.md)
+   PROJECT_EXISTS=$([ -f .planning/PROJECT.md ] || [ -d .planning/projects ] && echo "yes")
    ```
 
-2. **Initialize git repo in THIS directory** (required even if inside a parent repo):
+2. **Route based on structure detected:**
+
+   **If NESTED_STRUCTURE = "yes" (projects/ directory exists):**
+   - Skip to Phase 1.5: Create New Project in Nested Structure
+
+   **If FLAT_STRUCTURE = "yes" (PROJECT.md exists, projects/ doesn't):**
+   - Skip to Phase 1.3: Offer Migration to Multi-Project
+
+   **If no .planning/ structure exists:**
+   - Continue to step 3 (initialize new project)
+
+3. **Initialize git repo in THIS directory** (required even if inside a parent repo):
    ```bash
    if [ -d .git ] || [ -f .git ]; then
        echo "Git repo exists in current directory"
@@ -57,7 +76,7 @@ This is the most leveraged moment in any project. Deep questioning here means be
    fi
    ```
 
-3. **Detect existing code (brownfield detection):**
+4. **Detect existing code (brownfield detection):**
    ```bash
    CODE_FILES=$(find . -name "*.ts" -o -name "*.js" -o -name "*.py" -o -name "*.go" -o -name "*.rs" -o -name "*.swift" -o -name "*.java" 2>/dev/null | grep -v node_modules | grep -v .git | head -20)
    HAS_PACKAGE=$([ -f package.json ] || [ -f requirements.txt ] || [ -f Cargo.toml ] || [ -f go.mod ] || [ -f Package.swift ] && echo "yes")
@@ -65,6 +84,187 @@ This is the most leveraged moment in any project. Deep questioning here means be
    ```
 
    **You MUST run all bash commands above using the Bash tool before proceeding.**
+
+## Phase 1.3: Offer Migration to Multi-Project
+
+**This phase runs when FLAT_STRUCTURE = "yes" (existing flat .planning/ detected).**
+
+Show the user what exists:
+
+```bash
+# List existing planning files
+echo "Found existing planning structure:"
+ls -1 .planning/ | grep -v "^codebase$" | sed 's/^/  - /'
+
+# Show directory structure
+if [ -d .planning/phases ]; then
+  PHASE_COUNT=$(ls -1d .planning/phases/*/ 2>/dev/null | wc -l | tr -d ' ')
+  echo "  - phases/ ($PHASE_COUNT phases)"
+fi
+```
+
+Present to user:
+
+```
+Found existing planning structure:
+  - PROJECT.md
+  - REQUIREMENTS.md
+  - ROADMAP.md
+  - STATE.md
+  - config.json
+  - phases/ (X phases)
+  [... other files found ...]
+
+This looks like a single-project setup. To support multiple projects,
+these files can be moved to .planning/projects/<name>/.
+
+Shared files will stay at root:
+  - .planning/codebase/ (repo-level analysis)
+  - .planning/config.json (global defaults)
+```
+
+Use AskUserQuestion:
+- header: "Migration"
+- question: "Would you like to migrate to multi-project structure?"
+- options:
+  - "Migrate to multi-project (Recommended)" — Support multiple concurrent projects
+  - "Keep single-project structure" — Continue with flat .planning/
+
+**If user chooses "Migrate to multi-project":**
+
+Ask for project name:
+
+Use AskUserQuestion:
+- header: "Project Name"
+- question: "What should this project be named?"
+- options:
+  - "Use descriptive name" — e.g., "main-app", "api-refactor", "mobile-client"
+
+After user provides name (either via option or freeform response):
+
+```
+Migrating to projects/{PROJECT_NAME}/...
+```
+
+Execute migration workflow:
+- Follow steps in @~/.claude/get-shit-done/workflows/migrate-to-multiproject.md
+- Start from step "pre_migration_checks"
+- Execute all steps through "post_migration_verification"
+
+After successful migration:
+
+```
+✓ Migration complete!
+
+Your project is now at: .planning/projects/{PROJECT_NAME}/
+Active project: {PROJECT_NAME}
+
+All GSD commands will operate on this project.
+To create additional projects: /gsd:new-project [name]
+```
+
+**Exit the command** (migration complete, no further setup needed).
+
+**If user chooses "Keep single-project structure":**
+
+```
+Continuing with flat .planning/ structure.
+
+Note: You can migrate later by running /gsd:new-project again.
+```
+
+Abort with message:
+
+```
+ERROR: Project already initialized at .planning/
+
+To work with this project, use:
+  /gsd:progress — View current status
+  /gsd:plan-phase <N> — Plan next phase
+  /gsd:execute-phase <N> — Execute next phase
+
+To migrate to multi-project later, run:
+  /gsd:new-project
+```
+
+Exit the command.
+
+## Phase 1.5: Create New Project in Nested Structure
+
+**This phase runs when NESTED_STRUCTURE = "yes" (projects/ directory exists).**
+
+User is creating an additional project in existing multi-project setup.
+
+Ask for project name:
+
+Use AskUserQuestion:
+- header: "New Project"
+- question: "What should this project be named?"
+- options:
+  - "Enter name" — Descriptive name like "mobile-app", "admin-dashboard", etc.
+
+After user provides name:
+
+**Verify project doesn't already exist:**
+
+```bash
+if [ -d .planning/projects/{PROJECT_NAME} ]; then
+  echo "ERROR: Project '{PROJECT_NAME}' already exists"
+  exit 1
+fi
+```
+
+**Create project structure:**
+
+```bash
+mkdir -p .planning/projects/{PROJECT_NAME}
+```
+
+**Copy global config as starting point:**
+
+```bash
+if [ -f .planning/config.json ]; then
+  cp .planning/config.json .planning/projects/{PROJECT_NAME}/config.json
+fi
+```
+
+**Set as active project:**
+
+```bash
+echo "{PROJECT_NAME}" > .planning/.active
+```
+
+**Verify .active is gitignored:**
+
+```bash
+if ! git check-ignore -q .planning/.active 2>/dev/null; then
+  echo "⚠️ Warning: .active file is not gitignored"
+  echo "Adding to .gitignore..."
+
+  if [ ! -f .planning/.gitignore ]; then
+    echo ".active" > .planning/.gitignore
+  else
+    if ! grep -q "^\.active$" .planning/.gitignore; then
+      echo ".active" >> .planning/.gitignore
+    fi
+  fi
+
+  git add .planning/.gitignore
+  git commit -m "chore: gitignore .active file"
+fi
+```
+
+Display:
+
+```
+Created new project: {PROJECT_NAME}
+Active project set to: {PROJECT_NAME}
+
+All GSD commands will operate on projects/{PROJECT_NAME}/
+To switch between projects: /gsd:switch-project <name>
+```
+
+**Continue to Phase 2** (Brownfield Offer) to initialize the new project.
 
 ## Phase 2: Brownfield Offer
 
