@@ -22,7 +22,7 @@ Requirements for initial release. Each maps to roadmap phases.
 - [ ] **STRUCT-01**: Each project has isolated directory at `.planning/projects/<name>/`
 - [ ] **STRUCT-02**: Project directories contain PROJECT.md, ROADMAP.md, STATE.md, config.json, research/, phases/
 - [ ] **STRUCT-03**: Codebase map is shared at `.planning/codebase/` (not per-project)
-- [ ] **STRUCT-04**: Existing flat `.planning/` structure auto-migrates to `projects/default/`
+- [ ] **STRUCT-04**: Existing flat `.planning/` structure can be migrated via `/gsd:new-project`
 - [ ] **STRUCT-05**: Migration preserves all existing files and git history
 
 ### Configuration
@@ -84,13 +84,13 @@ Which phases cover which requirements. Updated during roadmap creation.
 | FOUND-03 | Phase 2 | Pending |
 | FOUND-04 | Phase 2 | Pending |
 | FOUND-05 | Phase 2 | Pending |
-| FOUND-06 | Phase 1 | Pending |
+| FOUND-06 | Phase 1 | Complete |
 | FOUND-07 | Phase 2 | Pending |
-| STRUCT-01 | Phase 1 | Pending |
-| STRUCT-02 | Phase 1 | Pending |
-| STRUCT-03 | Phase 1 | Pending |
-| STRUCT-04 | Phase 1 | Pending |
-| STRUCT-05 | Phase 1 | Pending |
+| STRUCT-01 | Phase 1 | Complete |
+| STRUCT-02 | Phase 1 | Complete |
+| STRUCT-03 | Phase 1 | Complete |
+| STRUCT-04 | Phase 1 | Complete |
+| STRUCT-05 | Phase 1 | Complete |
 | CONFIG-01 | Phase 3 | Pending |
 | CONFIG-02 | Phase 3 | Pending |
 | CONFIG-03 | Phase 3 | Pending |
