@@ -79,30 +79,30 @@ Which phases cover which requirements. Updated during roadmap creation.
 
 | Requirement | Phase | Status |
 |-------------|-------|--------|
-| FOUND-01 | Phase ? | Pending |
-| FOUND-02 | Phase ? | Pending |
-| FOUND-03 | Phase ? | Pending |
-| FOUND-04 | Phase ? | Pending |
-| FOUND-05 | Phase ? | Pending |
-| FOUND-06 | Phase ? | Pending |
-| FOUND-07 | Phase ? | Pending |
-| STRUCT-01 | Phase ? | Pending |
-| STRUCT-02 | Phase ? | Pending |
-| STRUCT-03 | Phase ? | Pending |
-| STRUCT-04 | Phase ? | Pending |
-| STRUCT-05 | Phase ? | Pending |
-| CONFIG-01 | Phase ? | Pending |
-| CONFIG-02 | Phase ? | Pending |
-| CONFIG-03 | Phase ? | Pending |
-| INTEG-01 | Phase ? | Pending |
-| INTEG-02 | Phase ? | Pending |
-| INTEG-03 | Phase ? | Pending |
+| FOUND-01 | Phase 2 | Pending |
+| FOUND-02 | Phase 2 | Pending |
+| FOUND-03 | Phase 2 | Pending |
+| FOUND-04 | Phase 2 | Pending |
+| FOUND-05 | Phase 2 | Pending |
+| FOUND-06 | Phase 1 | Pending |
+| FOUND-07 | Phase 2 | Pending |
+| STRUCT-01 | Phase 1 | Pending |
+| STRUCT-02 | Phase 1 | Pending |
+| STRUCT-03 | Phase 1 | Pending |
+| STRUCT-04 | Phase 1 | Pending |
+| STRUCT-05 | Phase 1 | Pending |
+| CONFIG-01 | Phase 3 | Pending |
+| CONFIG-02 | Phase 3 | Pending |
+| CONFIG-03 | Phase 3 | Pending |
+| INTEG-01 | Phase 4 | Pending |
+| INTEG-02 | Phase 4 | Pending |
+| INTEG-03 | Phase 4 | Pending |
 
 **Coverage:**
 - v1 requirements: 18 total
-- Mapped to phases: 0
-- Unmapped: 18 (pending roadmap)
+- Mapped to phases: 18
+- Unmapped: 0
 
 ---
 *Requirements defined: 2026-02-04*
-*Last updated: 2026-02-04 after initial definition*
+*Last updated: 2026-02-04 after roadmap creation*
