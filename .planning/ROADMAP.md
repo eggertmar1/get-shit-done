@@ -24,15 +24,15 @@ Decimal phases appear between their surrounding integers in numeric order.
 **Depends on**: Nothing (first phase)
 **Requirements**: STRUCT-01, STRUCT-02, STRUCT-03, STRUCT-04, STRUCT-05, FOUND-06
 **Success Criteria** (what must be TRUE):
-  1. Existing flat `.planning/` repos auto-migrate to `projects/default/` on any GSD command
+  1. Running `/gsd:new-project` on flat `.planning/` offers migration with user confirmation
   2. Path resolver correctly routes all file operations to active project directory
   3. Codebase map remains shared at `.planning/codebase/` across all projects
   4. `.active` file tracks current project and is gitignored to prevent merge conflicts
 **Plans**: 2 plans
 
 Plans:
-- [ ] 01-01: Build path resolver and migration engine
-- [ ] 01-02: Implement auto-migration with backwards compatibility layer
+- [ ] 01-01: Create path resolution reference docs (path-resolution.md, shared-paths.md)
+- [ ] 01-02: Add migration workflow and detection to /gsd:new-project
 
 ### Phase 2: Project Commands
 **Goal**: Users can create, switch, list, and delete projects
@@ -85,7 +85,7 @@ Phases execute in numeric order: 1 → 2 → 3 → 4
 
 | Phase | Plans Complete | Status | Completed |
 |-------|----------------|--------|-----------|
-| 1. Foundation & Migration | 0/2 | Not started | - |
+| 1. Foundation & Migration | 0/2 | Planned | - |
 | 2. Project Commands | 0/3 | Not started | - |
 | 3. Configuration & Context | 0/1 | Not started | - |
 | 4. Integration | 0/2 | Not started | - |
