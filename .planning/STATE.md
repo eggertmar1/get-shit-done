@@ -5,22 +5,22 @@
 See: .planning/PROJECT.md (updated 2026-02-04)
 
 **Core value:** Multiple people can work on different things simultaneously in the same repo, with full visibility into each other's planning documents.
-**Current focus:** Foundation & Migration
+**Current focus:** Project Commands
 
 ## Current Position
 
-Phase: 1 of 4 (Foundation & Migration)
-Plan: 2 of 2 in current phase
-Status: Phase complete
-Last activity: 2026-02-04 — Completed 01-02-PLAN.md
+Phase: 2 of 4 (Project Commands)
+Plan: 1 of 4 in current phase
+Status: In progress
+Last activity: 2026-02-06 — Completed 02-01-PLAN.md
 
-Progress: [██░░░░░░░░] 25%
+Progress: [███░░░░░░░] 30%
 
 ## Performance Metrics
 
 **Velocity:**
-- Total plans completed: 2
-- Average duration: 11.5 min
+- Total plans completed: 3
+- Average duration: 8 min
 - Total execution time: 0.4 hours
 
 **By Phase:**
@@ -28,10 +28,11 @@ Progress: [██░░░░░░░░] 25%
 | Phase | Plans | Total | Avg/Plan |
 |-------|-------|-------|----------|
 | 01-foundation-migration | 2/2 | 23min | 11.5min |
+| 02-project-commands | 1/4 | 1min | 1min |
 
 **Recent Trend:**
-- Last 5 plans: 5min, 18min
-- Trend: Consistent velocity (11.5min avg)
+- Last 5 plans: 5min, 18min, 1min
+- Trend: Fast execution (simple documentation update)
 
 *Updated after each plan completion*
 
@@ -52,6 +53,8 @@ Recent decisions affecting current work:
 | User chooses project name (no 'default') | 01-02 | 2026-02-04 | Creates meaningful project names from start |
 | Best-effort migration error handling | 01-02 | 2026-02-04 | Simpler implementation, clear recovery guidance |
 | .active gitignored BEFORE creation | 01-02 | 2026-02-04 | Ensures local state never enters version control |
+| Use git symbolic-ref for branch detection | 02-01 | 2026-02-06 | Most reliable method, handles edge cases cleanly |
+| Show detected branch as selectable option | 02-01 | 2026-02-06 | User can accept or override the default |
 
 ### Pending Todos
 
@@ -67,7 +70,7 @@ None yet.
 
 ## Session Continuity
 
-Last session: 2026-02-04 21:39 UTC
-Stopped at: Completed 01-02-PLAN.md (Migration Workflow) - Phase 1 complete
+Last session: 2026-02-06 20:11 UTC
+Stopped at: Completed 02-01-PLAN.md (Git Branch Default)
 Resume file: None
-Next: Phase 2 - Project Commands (02-01-PLAN.md)
+Next: 02-02-PLAN.md (switch-project command)
