@@ -47,9 +47,9 @@ Plans:
 **Plans**: 3 plans
 
 Plans:
-- [ ] 02-01: Implement new-project command with git branch defaults
-- [ ] 02-02: Implement switch-project and list-projects commands
-- [ ] 02-03: Implement archive-project and active project validation
+- [x] 02-01: Implement new-project command with git branch defaults
+- [x] 02-02: Implement switch-project and list-projects commands
+- [x] 02-03: Implement archive-project and active project validation
 
 ### Phase 3: Configuration & Context
 **Goal**: Projects have independent configuration with intelligent git integration
@@ -86,6 +86,6 @@ Phases execute in numeric order: 1 → 2 → 3 → 4
 | Phase | Plans Complete | Status | Completed |
 |-------|----------------|--------|-----------|
 | 1. Foundation & Migration | 2/2 | Complete | 2026-02-04 |
-| 2. Project Commands | 0/3 | Not started | - |
+| 2. Project Commands | 3/3 | Complete | 2026-02-06 |
 | 3. Configuration & Context | 0/1 | Not started | - |
 | 4. Integration | 0/2 | Not started | - |
