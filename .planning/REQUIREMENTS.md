@@ -9,13 +9,13 @@ Requirements for initial release. Each maps to roadmap phases.
 
 ### Foundation
 
-- [ ] **FOUND-01**: `/gsd:new-project` accepts optional `[name]` argument for project naming
-- [ ] **FOUND-02**: Project name defaults to current git branch if not specified
-- [ ] **FOUND-03**: User can switch active project with `/gsd:switch-project <name>`
-- [ ] **FOUND-04**: User can list all projects with `/gsd:list-projects`
-- [ ] **FOUND-05**: User can delete a project with `/gsd:archive-project [name]`
-- [ ] **FOUND-06**: Active project is tracked in `.planning/.active` file
-- [ ] **FOUND-07**: Running GSD commands with no active project prompts user to select
+- [x] **FOUND-01**: `/gsd:new-project` accepts optional `[name]` argument for project naming
+- [x] **FOUND-02**: Project name defaults to current git branch if not specified
+- [x] **FOUND-03**: User can switch active project with `/gsd:switch-project <name>`
+- [x] **FOUND-04**: User can list all projects with `/gsd:list-projects`
+- [x] **FOUND-05**: User can delete a project with `/gsd:archive-project [name]`
+- [x] **FOUND-06**: Active project is tracked in `.planning/.active` file
+- [x] **FOUND-07**: Running GSD commands with no active project prompts user to select
 
 ### Structure
 
@@ -79,13 +79,13 @@ Which phases cover which requirements. Updated during roadmap creation.
 
 | Requirement | Phase | Status |
 |-------------|-------|--------|
-| FOUND-01 | Phase 2 | Pending |
-| FOUND-02 | Phase 2 | Pending |
-| FOUND-03 | Phase 2 | Pending |
-| FOUND-04 | Phase 2 | Pending |
-| FOUND-05 | Phase 2 | Pending |
+| FOUND-01 | Phase 2 | Complete |
+| FOUND-02 | Phase 2 | Complete |
+| FOUND-03 | Phase 2 | Complete |
+| FOUND-04 | Phase 2 | Complete |
+| FOUND-05 | Phase 2 | Complete |
 | FOUND-06 | Phase 1 | Complete |
-| FOUND-07 | Phase 2 | Pending |
+| FOUND-07 | Phase 2 | Complete |
 | STRUCT-01 | Phase 1 | Complete |
 | STRUCT-02 | Phase 1 | Complete |
 | STRUCT-03 | Phase 1 | Complete |
@@ -105,4 +105,4 @@ Which phases cover which requirements. Updated during roadmap creation.
 
 ---
 *Requirements defined: 2026-02-04*
-*Last updated: 2026-02-04 after roadmap creation*
+*Last updated: 2026-02-06 after Phase 2 completion*
