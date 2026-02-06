@@ -132,13 +132,39 @@ Use AskUserQuestion:
 
 **If user chooses "Migrate to multi-project":**
 
-Ask for project name:
+**Determine project name:**
 
-Use AskUserQuestion:
-- header: "Project Name"
-- question: "What should this project be named?"
-- options:
-  - "Use descriptive name" — e.g., "main-app", "api-refactor", "mobile-client"
+1. **If [name] argument was provided:** Use that name directly (skip branch detection)
+
+2. **If no argument provided:** Detect git branch as default:
+   ```bash
+   # Get current git branch (fails in detached HEAD)
+   BRANCH_NAME=$(git symbolic-ref --short HEAD 2>/dev/null)
+
+   # Handle detached HEAD or non-git directory
+   if [ -z "$BRANCH_NAME" ] || [ "$BRANCH_NAME" == "HEAD" ]; then
+     # Cannot auto-detect - must prompt user without suggestion
+     BRANCH_NAME=""
+   fi
+   ```
+
+3. **Prompt for project name based on detection:**
+
+   **If BRANCH_NAME detected:**
+   Use AskUserQuestion:
+   - header: "Project Name"
+   - question: "Project name? (detected from git branch: {BRANCH_NAME})"
+   - options:
+     - "{BRANCH_NAME}" — Use detected branch name
+     - "Enter custom name" — Type a different name
+
+   **If no BRANCH_NAME (detached HEAD or non-git):**
+   Display: "Not on a git branch - please provide project name"
+   Use AskUserQuestion:
+   - header: "Project Name"
+   - question: "What should this project be named?"
+   - options:
+     - "Use descriptive name" — e.g., "main-app", "api-refactor", "mobile-client"
 
 After user provides name (either via option or freeform response):
 
@@ -195,13 +221,39 @@ Exit the command.
 
 User is creating an additional project in existing multi-project setup.
 
-Ask for project name:
+**Determine project name:**
 
-Use AskUserQuestion:
-- header: "New Project"
-- question: "What should this project be named?"
-- options:
-  - "Enter name" — Descriptive name like "mobile-app", "admin-dashboard", etc.
+1. **If [name] argument was provided:** Use that name directly (skip branch detection)
+
+2. **If no argument provided:** Detect git branch as default:
+   ```bash
+   # Get current git branch (fails in detached HEAD)
+   BRANCH_NAME=$(git symbolic-ref --short HEAD 2>/dev/null)
+
+   # Handle detached HEAD or non-git directory
+   if [ -z "$BRANCH_NAME" ] || [ "$BRANCH_NAME" == "HEAD" ]; then
+     # Cannot auto-detect - must prompt user without suggestion
+     BRANCH_NAME=""
+   fi
+   ```
+
+3. **Prompt for project name based on detection:**
+
+   **If BRANCH_NAME detected:**
+   Use AskUserQuestion:
+   - header: "New Project"
+   - question: "Project name? (detected from git branch: {BRANCH_NAME})"
+   - options:
+     - "{BRANCH_NAME}" — Use detected branch name
+     - "Enter custom name" — Type a different name
+
+   **If no BRANCH_NAME (detached HEAD or non-git):**
+   Display: "Not on a git branch - please provide project name"
+   Use AskUserQuestion:
+   - header: "New Project"
+   - question: "What should this project be named?"
+   - options:
+     - "Enter name" — Descriptive name like "mobile-app", "admin-dashboard", etc.
 
 After user provides name:
 
