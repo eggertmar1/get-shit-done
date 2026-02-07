@@ -7,15 +7,37 @@ Read STATE.md before any operation to load project context.
 Read config.json for planning behavior settings.
 
 @~/.claude/get-shit-done/references/git-integration.md
+@get-shit-done/references/path-resolution.md
+@get-shit-done/references/active-project-validation.md
 </required_reading>
 
 <process>
+
+<step name="resolve_planning_paths" priority="first">
+Resolve planning paths to support both flat and multi-project structures:
+
+```bash
+# Detect structure and set PROJECT_BASE
+if [ -d .planning/projects/ ]; then
+  ACTIVE_PROJECT=$(cat .planning/.active | tr -d '[:space:]')
+  PROJECT_BASE=".planning/projects/$ACTIVE_PROJECT"
+else
+  PROJECT_BASE=".planning"
+fi
+
+# Shared paths (always at root)
+GLOBAL_CONFIG=".planning/config.json"
+```
+
+All project-specific file operations throughout this workflow use `$PROJECT_BASE`.
+Shared files (codebase/, config.json) remain at `.planning/` root.
+</step>
 
 <step name="resolve_model_profile" priority="first">
 Read model profile for agent spawning:
 
 ```bash
-MODEL_PROFILE=$(cat .planning/config.json 2>/dev/null | grep -o '"model_profile"[[:space:]]*:[[:space:]]*"[^"]*"' | grep -o '"[^"]*"$' | tr -d '"' || echo "balanced")
+MODEL_PROFILE=$(cat $GLOBAL_CONFIG 2>/dev/null | grep -o '"model_profile"[[:space:]]*:[[:space:]]*"[^"]*"' | grep -o '"[^"]*"$' | tr -d '"' || echo "balanced")
 ```
 
 Default to "balanced" if not set.
@@ -33,7 +55,7 @@ Store resolved model for use in Task calls below.
 Before any operation, read project state:
 
 ```bash
-cat .planning/STATE.md 2>/dev/null
+cat $PROJECT_BASE/STATE.md 2>/dev/null
 ```
 
 **If file exists:** Parse and internalize:
@@ -43,7 +65,7 @@ cat .planning/STATE.md 2>/dev/null
 - Blockers/concerns (things to watch for)
 - Brief alignment status
 
-**If file missing but .planning/ exists:**
+**If file missing but PROJECT_BASE exists:**
 
 ```
 STATE.md missing but planning artifacts exist.
@@ -60,7 +82,7 @@ This ensures every execution has full project context.
 
 ```bash
 # Check if planning docs should be committed (default: true)
-COMMIT_PLANNING_DOCS=$(cat .planning/config.json 2>/dev/null | grep -o '"commit_docs"[[:space:]]*:[[:space:]]*[^,}]*' | grep -o 'true\|false' || echo "true")
+COMMIT_PLANNING_DOCS=$(cat $GLOBAL_CONFIG 2>/dev/null | grep -o '"commit_docs"[[:space:]]*:[[:space:]]*[^,}]*' | grep -o 'true\|false' || echo "true")
 # Auto-detect gitignored (overrides config)
 git check-ignore -q .planning 2>/dev/null && COMMIT_PLANNING_DOCS=false
 ```
@@ -75,11 +97,11 @@ Find the next plan to execute:
 - Identify first plan without corresponding SUMMARY
 
 ```bash
-cat .planning/ROADMAP.md
+cat $PROJECT_BASE/ROADMAP.md
 # Look for phase with "In progress" status
 # Then find plans in that phase
-ls .planning/phases/XX-name/*-PLAN.md 2>/dev/null | sort
-ls .planning/phases/XX-name/*-SUMMARY.md 2>/dev/null | sort
+ls $PROJECT_BASE/phases/XX-name/*-PLAN.md 2>/dev/null | sort
+ls $PROJECT_BASE/phases/XX-name/*-SUMMARY.md 2>/dev/null | sort
 ```
 
 **Logic:**
@@ -92,8 +114,8 @@ ls .planning/phases/XX-name/*-SUMMARY.md 2>/dev/null | sort
 
 Phase directories can be integer or decimal format:
 
-- Integer: `.planning/phases/01-foundation/01-01-PLAN.md`
-- Decimal: `.planning/phases/01.1-hotfix/01.1-01-PLAN.md`
+- Integer: `$PROJECT_BASE/phases/01-foundation/01-01-PLAN.md`
+- Decimal: `$PROJECT_BASE/phases/01.1-hotfix/01.1-01-PLAN.md`
 
 Parse phase number from path (handles both formats):
 
@@ -111,7 +133,7 @@ Confirm with user if ambiguous.
 
 <config-check>
 ```bash
-cat .planning/config.json 2>/dev/null
+cat $GLOBAL_CONFIG 2>/dev/null
 ```
 </config-check>
 
@@ -160,7 +182,7 @@ Plans are divided into segments by checkpoints. Each segment is routed to optima
 
 ```bash
 # Find all checkpoints and their types
-grep -n "type=\"checkpoint" .planning/phases/XX-name/{phase}-{plan}-PLAN.md
+grep -n "type=\"checkpoint" $PROJECT_BASE/phases/XX-name/{phase}-{plan}-PLAN.md
 ```
 
 **2. Analyze execution strategy:**
@@ -227,7 +249,7 @@ No segmentation benefit - execute entirely in main
 
 2. Use Task tool with subagent_type="gsd-executor" and model="{executor_model}":
 
-   Prompt: "Execute plan at .planning/phases/{phase}-{plan}-PLAN.md
+   Prompt: "Execute plan at $PROJECT_BASE/phases/{phase}-{plan}-PLAN.md
 
    This is an autonomous plan (no checkpoints). Execute all tasks, create SUMMARY.md in phase directory, commit with message following plan's commit guidance.
 
@@ -238,7 +260,7 @@ No segmentation benefit - execute entirely in main
 3. After Task tool returns with agent_id:
 
    a. Write agent_id to current-agent-id.txt:
-      echo "[agent_id]" > .planning/current-agent-id.txt
+      echo "[agent_id]" > $PROJECT_BASE/current-agent-id.txt
 
    b. Append spawn entry to agent-history.json:
       {
@@ -262,7 +284,7 @@ No segmentation benefit - execute entirely in main
       - Set completion_timestamp: "[ISO timestamp]"
 
    b. Clear current-agent-id.txt:
-      rm .planning/current-agent-id.txt
+      rm $PROJECT_BASE/current-agent-id.txt
 
 6. Report completion to user
 ```
@@ -273,7 +295,7 @@ No segmentation benefit - execute entirely in main
 Execute segment-by-segment:
 
 For each autonomous segment:
-  Spawn subagent with prompt: "Execute tasks [X-Y] from plan at .planning/phases/{phase}-{plan}-PLAN.md. Read the plan for full context and deviation rules. Do NOT create SUMMARY or commit - just execute these tasks and report results."
+  Spawn subagent with prompt: "Execute tasks [X-Y] from plan at $PROJECT_BASE/phases/{phase}-{plan}-PLAN.md. Read the plan for full context and deviation rules. Do NOT create SUMMARY or commit - just execute these tasks and report results."
 
   Wait for subagent completion
 
@@ -308,21 +330,21 @@ Before spawning any subagents, set up tracking infrastructure:
 
 ```bash
 # Create agent history file if doesn't exist
-if [ ! -f .planning/agent-history.json ]; then
-  echo '{"version":"1.0","max_entries":50,"entries":[]}' > .planning/agent-history.json
+if [ ! -f $PROJECT_BASE/agent-history.json ]; then
+  echo '{"version":"1.0","max_entries":50,"entries":[]}' > $PROJECT_BASE/agent-history.json
 fi
 
 # Clear any stale current-agent-id (from interrupted sessions)
 # Will be populated when subagent spawns
-rm -f .planning/current-agent-id.txt
+rm -f $PROJECT_BASE/current-agent-id.txt
 ```
 
 **2. Check for interrupted agents (resume detection):**
 
 ```bash
 # Check if current-agent-id.txt exists from previous interrupted session
-if [ -f .planning/current-agent-id.txt ]; then
-  INTERRUPTED_ID=$(cat .planning/current-agent-id.txt)
+if [ -f $PROJECT_BASE/current-agent-id.txt ]; then
+  INTERRUPTED_ID=$(cat $PROJECT_BASE/current-agent-id.txt)
   echo "Found interrupted agent: $INTERRUPTED_ID"
 fi
 ```
@@ -402,7 +424,7 @@ For Pattern A (fully autonomous) and Pattern C (decision-dependent), skip this s
       **After Task tool returns with agent_id:**
 
       1. Write agent_id to current-agent-id.txt:
-         echo "[agent_id]" > .planning/current-agent-id.txt
+         echo "[agent_id]" > $PROJECT_BASE/current-agent-id.txt
 
       2. Append spawn entry to agent-history.json:
          {
@@ -427,7 +449,7 @@ For Pattern A (fully autonomous) and Pattern C (decision-dependent), skip this s
          - Set completion_timestamp: "[ISO timestamp]"
 
       2. Clear current-agent-id.txt:
-         rm .planning/current-agent-id.txt
+         rm $PROJECT_BASE/current-agent-id.txt
 
       ```
 
@@ -527,7 +549,7 @@ Committing...
 <step name="load_prompt">
 Read the plan prompt:
 ```bash
-cat .planning/phases/XX-name/{phase}-{plan}-PLAN.md
+cat $PROJECT_BASE/phases/XX-name/{phase}-{plan}-PLAN.md
 ````
 
 This IS the execution instructions. Follow it exactly.
@@ -541,7 +563,7 @@ Before executing, check if previous phase had issues:
 
 ```bash
 # Find previous phase summary
-ls .planning/phases/*/SUMMARY.md 2>/dev/null | sort -r | head -2 | tail -1
+ls $PROJECT_BASE/phases/*/SUMMARY.md 2>/dev/null | sort -r | head -2 | tail -1
 ```
 
 If previous phase SUMMARY.md has "Issues Encountered" != "None" or "Next Phase Readiness" mentions blockers:
@@ -1255,12 +1277,12 @@ Pass timing data to SUMMARY.md creation.
 Check PLAN.md frontmatter for `user_setup` field:
 
 ```bash
-grep -A 50 "^user_setup:" .planning/phases/XX-name/{phase}-{plan}-PLAN.md | head -50
+grep -A 50 "^user_setup:" $PROJECT_BASE/phases/XX-name/{phase}-{plan}-PLAN.md | head -50
 ```
 
 **If user_setup exists and is not empty:**
 
-Create `.planning/phases/XX-name/{phase}-USER-SETUP.md` using template from `~/.claude/get-shit-done/templates/user-setup.md`.
+Create `$PROJECT_BASE/phases/XX-name/{phase}-USER-SETUP.md` using template from `~/.claude/get-shit-done/templates/user-setup.md`.
 
 **Content generation:**
 
@@ -1323,7 +1345,7 @@ Set `USER_SETUP_CREATED=true` if file was generated, for use in completion messa
 Create `{phase}-{plan}-SUMMARY.md` as specified in the prompt's `<output>` section.
 Use ~/.claude/get-shit-done/templates/summary.md for structure.
 
-**File location:** `.planning/phases/XX-name/{phase}-{plan}-SUMMARY.md`
+**File location:** `$PROJECT_BASE/phases/XX-name/{phase}-{plan}-SUMMARY.md`
 
 **Frontmatter population:**
 
@@ -1493,7 +1515,7 @@ Present issues and wait for acknowledgment before proceeding.
 Update the roadmap file:
 
 ```bash
-ROADMAP_FILE=".planning/ROADMAP.md"
+ROADMAP_FILE="$PROJECT_BASE/ROADMAP.md"
 ```
 
 **If more plans remain in this phase:**
@@ -1527,14 +1549,14 @@ If `COMMIT_PLANNING_DOCS=true` (default):
 **1. Stage execution artifacts:**
 
 ```bash
-git add .planning/phases/XX-name/{phase}-{plan}-SUMMARY.md
-git add .planning/STATE.md
+git add $PROJECT_BASE/phases/XX-name/{phase}-{plan}-SUMMARY.md
+git add $PROJECT_BASE/STATE.md
 ```
 
 **2. Stage roadmap:**
 
 ```bash
-git add .planning/ROADMAP.md
+git add $PROJECT_BASE/ROADMAP.md
 ```
 
 **3. Verify staging:**
@@ -1555,7 +1577,7 @@ Tasks completed: [N]/[N]
 - [Task 2 name]
 - [Task 3 name]
 
-SUMMARY: .planning/phases/XX-name/{phase}-{plan}-SUMMARY.md
+SUMMARY: $PROJECT_BASE/phases/XX-name/{phase}-{plan}-SUMMARY.md
 EOF
 )"
 ```
@@ -1645,7 +1667,7 @@ If `USER_SETUP_CREATED=true` (from generate_user_setup step), always include thi
 
 This phase introduced external services requiring manual configuration:
 
-📋 .planning/phases/{phase-dir}/{phase}-USER-SETUP.md
+📋 $PROJECT_BASE/phases/{phase-dir}/{phase}-USER-SETUP.md
 
 Quick view:
 - [ ] {ENV_VAR_1}
@@ -1653,7 +1675,7 @@ Quick view:
 - [ ] {Dashboard config task}
 
 Complete this setup for the integration to function.
-Run `cat .planning/phases/{phase-dir}/{phase}-USER-SETUP.md` for full details.
+Run `cat $PROJECT_BASE/phases/{phase-dir}/{phase}-USER-SETUP.md` for full details.
 
 ---
 ```
@@ -1665,8 +1687,8 @@ This warning appears BEFORE "Plan complete" messaging. User sees setup requireme
 List files in the phase directory:
 
 ```bash
-ls -1 .planning/phases/[current-phase-dir]/*-PLAN.md 2>/dev/null | wc -l
-ls -1 .planning/phases/[current-phase-dir]/*-SUMMARY.md 2>/dev/null | wc -l
+ls -1 $PROJECT_BASE/phases/[current-phase-dir]/*-PLAN.md 2>/dev/null | wc -l
+ls -1 $PROJECT_BASE/phases/[current-phase-dir]/*-SUMMARY.md 2>/dev/null | wc -l
 ```
 
 State the counts: "This phase has [X] plans and [Y] summaries."
@@ -1691,7 +1713,7 @@ Identify the next unexecuted plan:
 <if mode="yolo">
 ```
 Plan {phase}-{plan} complete.
-Summary: .planning/phases/{phase-dir}/{phase}-{plan}-SUMMARY.md
+Summary: $PROJECT_BASE/phases/{phase-dir}/{phase}-{plan}-SUMMARY.md
 
 {Y} of {X} plans complete for Phase {Z}.
 
@@ -1704,7 +1726,7 @@ Loop back to identify_plan step automatically.
 <if mode="interactive" OR="custom with gates.execute_next_plan true">
 ```
 Plan {phase}-{plan} complete.
-Summary: .planning/phases/{phase-dir}/{phase}-{plan}-SUMMARY.md
+Summary: $PROJECT_BASE/phases/{phase-dir}/{phase}-{plan}-SUMMARY.md
 
 {Y} of {X} plans complete for Phase {Z}.
 
@@ -1763,7 +1785,7 @@ Read ROADMAP.md to get the next phase's name and goal.
 
 ```
 Plan {phase}-{plan} complete.
-Summary: .planning/phases/{phase-dir}/{phase}-{plan}-SUMMARY.md
+Summary: $PROJECT_BASE/phases/{phase-dir}/{phase}-{plan}-SUMMARY.md
 
 ## ✓ Phase {Z}: {Phase Name} Complete
 
@@ -1797,7 +1819,7 @@ All {Y} plans finished.
 🎉 MILESTONE COMPLETE!
 
 Plan {phase}-{plan} complete.
-Summary: .planning/phases/{phase-dir}/{phase}-{plan}-SUMMARY.md
+Summary: $PROJECT_BASE/phases/{phase-dir}/{phase}-{plan}-SUMMARY.md
 
 ## ✓ Phase {Z}: {Phase Name} Complete
 
