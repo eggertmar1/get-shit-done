@@ -1,0 +1,5 @@
+# Local-only project state (machine-specific, not shared)
+.active
+
+# OS artifacts
+.DS_Store
