@@ -1,6 +1,11 @@
 ---
 name: gsd:research-phase
 description: Research how to implement a phase (standalone - usually use /gsd:plan-phase instead)
+
+<execution_context>
+@get-shit-done/references/active-project-validation.md
+</execution_context>
+
 argument-hint: "[phase]"
 allowed-tools:
   - Read
@@ -61,7 +66,7 @@ else
   PHASE="$ARGUMENTS"
 fi
 
-grep -A5 "Phase ${PHASE}:" .planning/ROADMAP.md 2>/dev/null
+grep -A5 "Phase ${PHASE}:" $PROJECT_BASE/ROADMAP.md 2>/dev/null
 ```
 
 **If not found:** Error and exit. **If found:** Extract phase number, name, description.
@@ -69,7 +74,7 @@ grep -A5 "Phase ${PHASE}:" .planning/ROADMAP.md 2>/dev/null
 ## 2. Check Existing Research
 
 ```bash
-ls .planning/phases/${PHASE}-*/RESEARCH.md 2>/dev/null
+ls $PROJECT_BASE/phases/${PHASE}-*/RESEARCH.md 2>/dev/null
 ```
 
 **If exists:** Offer: 1) Update research, 2) View existing, 3) Skip. Wait for response.
@@ -79,10 +84,10 @@ ls .planning/phases/${PHASE}-*/RESEARCH.md 2>/dev/null
 ## 3. Gather Phase Context
 
 ```bash
-grep -A20 "Phase ${PHASE}:" .planning/ROADMAP.md
-cat .planning/REQUIREMENTS.md 2>/dev/null
-cat .planning/phases/${PHASE}-*/*-CONTEXT.md 2>/dev/null
-grep -A30 "### Decisions Made" .planning/STATE.md 2>/dev/null
+grep -A20 "Phase ${PHASE}:" $PROJECT_BASE/ROADMAP.md
+cat $PROJECT_BASE/REQUIREMENTS.md 2>/dev/null
+cat $PROJECT_BASE/phases/${PHASE}-*/*-CONTEXT.md 2>/dev/null
+grep -A30 "### Decisions Made" $PROJECT_BASE/STATE.md 2>/dev/null
 ```
 
 Present summary with phase description, requirements, prior decisions.
@@ -142,7 +147,7 @@ Before declaring complete, verify:
 </quality_gate>
 
 <output>
-Write to: .planning/phases/${PHASE}-{slug}/${PHASE}-RESEARCH.md
+Write to: $PROJECT_BASE/phases/${PHASE}-{slug}/${PHASE}-RESEARCH.md
 </output>
 ```
 
@@ -171,7 +176,7 @@ Continue research for Phase {phase_number}: {phase_name}
 </objective>
 
 <prior_state>
-Research file: @.planning/phases/${PHASE}-{slug}/${PHASE}-RESEARCH.md
+Research file: @$PROJECT_BASE/phases/${PHASE}-{slug}/${PHASE}-RESEARCH.md
 </prior_state>
 
 <checkpoint_response>

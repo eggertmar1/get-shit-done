@@ -1,6 +1,11 @@
 ---
 name: gsd:quick
 description: Execute a quick task with GSD guarantees (atomic commits, state tracking) but skip optional agents
+
+<execution_context>
+@get-shit-done/references/active-project-validation.md
+</execution_context>
+
 argument-hint: ""
 allowed-tools:
   - Read
@@ -30,7 +35,7 @@ Orchestration is inline - no separate workflow file. Quick mode is deliberately 
 </execution_context>
 
 <context>
-@.planning/STATE.md
+@$PROJECT_BASE/STATE.md
 </context>
 
 <process>
@@ -60,7 +65,7 @@ Store resolved models for use in Task calls below.
 Check that an active GSD project exists:
 
 ```bash
-if [ ! -f .planning/ROADMAP.md ]; then
+if [ ! -f $PROJECT_BASE/ROADMAP.md ]; then
   echo "Quick mode requires an active project with ROADMAP.md."
   echo "Run /gsd:new-project first."
   exit 1
@@ -149,7 +154,7 @@ Task(
 **Description:** ${DESCRIPTION}
 
 **Project State:**
-@.planning/STATE.md
+@$PROJECT_BASE/STATE.md
 
 </planning_context>
 
@@ -190,7 +195,7 @@ Task(
 Execute quick task ${next_num}.
 
 Plan: @${QUICK_DIR}/${next_num}-PLAN.md
-Project state: @.planning/STATE.md
+Project state: @$PROJECT_BASE/STATE.md
 
 <constraints>
 - Execute all tasks in the plan
@@ -260,7 +265,7 @@ Stage and commit quick task artifacts:
 # Stage quick task artifacts
 git add ${QUICK_DIR}/${next_num}-PLAN.md
 git add ${QUICK_DIR}/${next_num}-SUMMARY.md
-git add .planning/STATE.md
+git add $PROJECT_BASE/STATE.md
 
 # Commit with quick task format
 git commit -m "$(cat <<'EOF'

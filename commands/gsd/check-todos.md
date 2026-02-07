@@ -1,6 +1,11 @@
 ---
 name: gsd:check-todos
 description: List pending todos and select one to work on
+
+<execution_context>
+@get-shit-done/references/active-project-validation.md
+</execution_context>
+
 argument-hint: [area filter]
 allowed-tools:
   - Read
@@ -17,15 +22,15 @@ Enables reviewing captured ideas and deciding what to work on next.
 </objective>
 
 <context>
-@.planning/STATE.md
-@.planning/ROADMAP.md
+@$PROJECT_BASE/STATE.md
+@$PROJECT_BASE/ROADMAP.md
 </context>
 
 <process>
 
 <step name="check_exist">
 ```bash
-TODO_COUNT=$(ls .planning/todos/pending/*.md 2>/dev/null | wc -l | tr -d ' ')
+TODO_COUNT=$(ls $PROJECT_BASE/todos/pending/*.md 2>/dev/null | wc -l | tr -d ' ')
 echo "Pending todos: $TODO_COUNT"
 ```
 
@@ -54,7 +59,7 @@ Check for area filter in arguments:
 
 <step name="list_todos">
 ```bash
-for file in .planning/todos/pending/*.md; do
+for file in $PROJECT_BASE/todos/pending/*.md; do
   created=$(grep "^created:" "$file" | cut -d' ' -f2)
   title=$(grep "^title:" "$file" | cut -d':' -f2- | xargs)
   area=$(grep "^area:" "$file" | cut -d' ' -f2)
@@ -110,7 +115,7 @@ If `files` field has entries, read and briefly summarize each.
 
 <step name="check_roadmap">
 ```bash
-ls .planning/ROADMAP.md 2>/dev/null && echo "Roadmap exists"
+ls $PROJECT_BASE/ROADMAP.md 2>/dev/null && echo "Roadmap exists"
 ```
 
 If roadmap exists:
@@ -146,7 +151,7 @@ Use AskUserQuestion:
 <step name="execute_action">
 **Work on it now:**
 ```bash
-mv ".planning/todos/pending/[filename]" ".planning/todos/done/"
+mv "$PROJECT_BASE/todos/pending/[filename]" "$PROJECT_BASE/todos/done/"
 ```
 Update STATE.md todo count. Present problem/solution context. Begin work or ask how to proceed.
 
@@ -168,7 +173,7 @@ Return to list_todos step.
 After any action that changes todo count:
 
 ```bash
-ls .planning/todos/pending/*.md 2>/dev/null | wc -l
+ls $PROJECT_BASE/todos/pending/*.md 2>/dev/null | wc -l
 ```
 
 Update STATE.md "### Pending Todos" section if exists.
@@ -189,9 +194,9 @@ git check-ignore -q .planning 2>/dev/null && COMMIT_PLANNING_DOCS=false
 **If `COMMIT_PLANNING_DOCS=true` (default):**
 
 ```bash
-git add .planning/todos/done/[filename]
-git rm --cached .planning/todos/pending/[filename] 2>/dev/null || true
-[ -f .planning/STATE.md ] && git add .planning/STATE.md
+git add $PROJECT_BASE/todos/done/[filename]
+git rm --cached $PROJECT_BASE/todos/pending/[filename] 2>/dev/null || true
+[ -f $PROJECT_BASE/STATE.md ] && git add $PROJECT_BASE/STATE.md
 git commit -m "$(cat <<'EOF'
 docs: start work on todo - [title]
 
@@ -206,8 +211,8 @@ Confirm: "Committed: docs: start work on todo - [title]"
 </process>
 
 <output>
-- Moved todo to `.planning/todos/done/` (if "Work on it now")
-- Updated `.planning/STATE.md` (if todo count changed)
+- Moved todo to `$PROJECT_BASE/todos/done/` (if "Work on it now")
+- Updated `$PROJECT_BASE/STATE.md` (if todo count changed)
 </output>
 
 <anti_patterns>

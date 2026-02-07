@@ -1,6 +1,11 @@
 ---
 name: gsd:verify-work
 description: Validate built features through conversational UAT
+
+<execution_context>
+@get-shit-done/references/active-project-validation.md
+</execution_context>
+
 argument-hint: "[phase number, e.g., '4']"
 allowed-tools:
   - Read
@@ -30,8 +35,8 @@ Phase: $ARGUMENTS (optional)
 - If provided: Test specific phase (e.g., "4")
 - If not provided: Check for active sessions or prompt for phase
 
-@.planning/STATE.md
-@.planning/ROADMAP.md
+@$PROJECT_BASE/STATE.md
+@$PROJECT_BASE/ROADMAP.md
 </context>
 
 <process>
@@ -163,7 +168,7 @@ Fix plans verified ✓
 ───────────────────────────────────────────────────────────────
 
 **Also available:**
-- cat .planning/phases/{phase_dir}/*-PLAN.md — review fix plans
+- cat $PROJECT_BASE/phases/{phase_dir}/*-PLAN.md — review fix plans
 - /gsd:plan-phase {Z} --gaps — regenerate fix plans
 
 ───────────────────────────────────────────────────────────────

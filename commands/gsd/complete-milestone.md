@@ -2,6 +2,11 @@
 type: prompt
 name: gsd:complete-milestone
 description: Archive completed milestone and prepare for next version
+
+<execution_context>
+@get-shit-done/references/active-project-validation.md
+</execution_context>
+
 argument-hint: <version>
 allowed-tools:
   - Read
@@ -25,10 +30,10 @@ Output: Milestone archived (roadmap + requirements), PROJECT.md evolved, git tag
 
 <context>
 **Project files:**
-- `.planning/ROADMAP.md`
-- `.planning/REQUIREMENTS.md`
-- `.planning/STATE.md`
-- `.planning/PROJECT.md`
+- `$PROJECT_BASE/ROADMAP.md`
+- `$PROJECT_BASE/REQUIREMENTS.md`
+- `$PROJECT_BASE/STATE.md`
+- `$PROJECT_BASE/PROJECT.md`
 
 **User input:**
 
@@ -92,7 +97,7 @@ Output: Milestone archived (roadmap + requirements), PROJECT.md evolved, git tag
    - Create `.planning/milestones/v{{version}}-REQUIREMENTS.md`
    - Mark all v1 requirements as complete (checkboxes checked)
    - Note requirement outcomes (validated, adjusted, dropped)
-   - Delete `.planning/REQUIREMENTS.md` (fresh one created for next milestone)
+   - Delete `$PROJECT_BASE/REQUIREMENTS.md` (fresh one created for next milestone)
 
 6. **Update PROJECT.md:**
 
@@ -116,7 +121,7 @@ Output: Milestone archived (roadmap + requirements), PROJECT.md evolved, git tag
 
 - Milestone archived to `.planning/milestones/v{{version}}-ROADMAP.md`
 - Requirements archived to `.planning/milestones/v{{version}}-REQUIREMENTS.md`
-- `.planning/REQUIREMENTS.md` deleted (fresh for next milestone)
+- `$PROJECT_BASE/REQUIREMENTS.md` deleted (fresh for next milestone)
 - ROADMAP.md collapsed to one-line entry
 - PROJECT.md updated with current state
 - Git tag v{{version}} created

@@ -1,6 +1,11 @@
 ---
 name: gsd:discuss-phase
 description: Gather phase context through adaptive questioning before planning
+
+<execution_context>
+@get-shit-done/references/active-project-validation.md
+</execution_context>
+
 argument-hint: "<phase>"
 allowed-tools:
   - Read
@@ -32,10 +37,10 @@ Extract implementation decisions that downstream agents need — researcher and 
 Phase number: $ARGUMENTS (required)
 
 **Load project state:**
-@.planning/STATE.md
+@$PROJECT_BASE/STATE.md
 
 **Load roadmap:**
-@.planning/ROADMAP.md
+@$PROJECT_BASE/ROADMAP.md
 </context>
 
 <process>

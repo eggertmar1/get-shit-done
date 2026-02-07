@@ -1,6 +1,11 @@
 ---
 name: gsd:insert-phase
 description: Insert urgent work as decimal phase (e.g., 72.1) between existing phases
+
+<execution_context>
+@get-shit-done/references/active-project-validation.md
+</execution_context>
+
 argument-hint: <after> <description>
 allowed-tools:
   - Read
@@ -17,8 +22,8 @@ Purpose: Handle urgent work discovered during execution without renumbering enti
 </objective>
 
 <execution_context>
-@.planning/ROADMAP.md
-@.planning/STATE.md
+@$PROJECT_BASE/ROADMAP.md
+@$PROJECT_BASE/STATE.md
 </execution_context>
 
 <process>
@@ -63,10 +68,10 @@ fi
 Load the roadmap file:
 
 ```bash
-if [ -f .planning/ROADMAP.md ]; then
-  ROADMAP=".planning/ROADMAP.md"
+if [ -f $PROJECT_BASE/ROADMAP.md ]; then
+  ROADMAP="$PROJECT_BASE/ROADMAP.md"
 else
-  echo "ERROR: No roadmap found (.planning/ROADMAP.md)"
+  echo "ERROR: No roadmap found ($PROJECT_BASE/ROADMAP.md)"
   exit 1
 fi
 ```
@@ -122,7 +127,7 @@ Example: `06.1-fix-critical-auth-bug` (phase 6 insertion)
 Create the phase directory structure:
 
 ```bash
-phase_dir=".planning/phases/${decimal_phase}-${slug}"
+phase_dir="$PROJECT_BASE/phases/${decimal_phase}-${slug}"
 mkdir -p "$phase_dir"
 ```
 
@@ -159,7 +164,7 @@ Preserve all other content exactly (formatting, spacing, other phases).
 <step name="update_project_state">
 Update STATE.md to reflect the inserted phase:
 
-1. Read `.planning/STATE.md`
+1. Read `$PROJECT_BASE/STATE.md`
 2. Under "## Accumulated Context" → "### Roadmap Evolution" add entry:
    ```
    - Phase {decimal_phase} inserted after Phase {after_phase}: {description} (URGENT)
@@ -176,12 +181,12 @@ Present completion summary:
 ```
 Phase {decimal_phase} inserted after Phase {after_phase}:
 - Description: {description}
-- Directory: .planning/phases/{decimal-phase}-{slug}/
+- Directory: $PROJECT_BASE/phases/{decimal-phase}-{slug}/
 - Status: Not planned yet
 - Marker: (INSERTED) - indicates urgent work
 
 Roadmap updated: {roadmap-path}
-Project state updated: .planning/STATE.md
+Project state updated: $PROJECT_BASE/STATE.md
 
 ---
 
@@ -218,7 +223,7 @@ Project state updated: .planning/STATE.md
 <success_criteria>
 Phase insertion is complete when:
 
-- [ ] Phase directory created: `.planning/phases/{N.M}-{slug}/`
+- [ ] Phase directory created: `$PROJECT_BASE/phases/{N.M}-{slug}/`
 - [ ] Roadmap updated with new phase entry (includes "(INSERTED)" marker)
 - [ ] Phase inserted in correct position (after target phase, before next integer phase)
 - [ ] STATE.md updated with roadmap evolution note

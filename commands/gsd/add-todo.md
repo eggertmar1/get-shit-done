@@ -1,6 +1,11 @@
 ---
 name: gsd:add-todo
 description: Capture idea or task as todo from current conversation context
+
+<execution_context>
+@get-shit-done/references/active-project-validation.md
+</execution_context>
+
 argument-hint: [optional description]
 allowed-tools:
   - Read
@@ -16,20 +21,20 @@ Enables "thought → capture → continue" flow without losing context or derail
 </objective>
 
 <context>
-@.planning/STATE.md
+@$PROJECT_BASE/STATE.md
 </context>
 
 <process>
 
 <step name="ensure_directory">
 ```bash
-mkdir -p .planning/todos/pending .planning/todos/done
+mkdir -p $PROJECT_BASE/todos/pending $PROJECT_BASE/todos/done
 ```
 </step>
 
 <step name="check_existing_areas">
 ```bash
-ls .planning/todos/pending/*.md 2>/dev/null | xargs -I {} grep "^area:" {} 2>/dev/null | cut -d' ' -f2 | sort -u
+ls $PROJECT_BASE/todos/pending/*.md 2>/dev/null | xargs -I {} grep "^area:" {} 2>/dev/null | cut -d' ' -f2 | sort -u
 ```
 
 Note existing areas for consistency in infer_area step.
@@ -71,7 +76,7 @@ Use existing area from step 2 if similar match exists.
 
 <step name="check_duplicates">
 ```bash
-grep -l -i "[key words from title]" .planning/todos/pending/*.md 2>/dev/null
+grep -l -i "[key words from title]" $PROJECT_BASE/todos/pending/*.md 2>/dev/null
 ```
 
 If potential duplicate found:
@@ -95,7 +100,7 @@ date_prefix=$(date "+%Y-%m-%d")
 
 Generate slug from title (lowercase, hyphens, no special chars in FILENAME only).
 
-Write to `.planning/todos/pending/${date_prefix}-${slug}.md`:
+Write to `$PROJECT_BASE/todos/pending/${date_prefix}-${slug}.md`:
 
 ```markdown
 ---
@@ -117,9 +122,9 @@ files:
 </step>
 
 <step name="update_state">
-If `.planning/STATE.md` exists:
+If `$PROJECT_BASE/STATE.md` exists:
 
-1. Count todos: `ls .planning/todos/pending/*.md 2>/dev/null | wc -l`
+1. Count todos: `ls $PROJECT_BASE/todos/pending/*.md 2>/dev/null | wc -l`
 2. Update "### Pending Todos" under "## Accumulated Context"
 </step>
 
@@ -138,8 +143,8 @@ git check-ignore -q .planning 2>/dev/null && COMMIT_PLANNING_DOCS=false
 **If `COMMIT_PLANNING_DOCS=true` (default):**
 
 ```bash
-git add .planning/todos/pending/[filename]
-[ -f .planning/STATE.md ] && git add .planning/STATE.md
+git add $PROJECT_BASE/todos/pending/[filename]
+[ -f $PROJECT_BASE/STATE.md ] && git add $PROJECT_BASE/STATE.md
 git commit -m "$(cat <<'EOF'
 docs: capture todo - [title]
 
@@ -153,7 +158,7 @@ Confirm: "Committed: docs: capture todo - [title]"
 
 <step name="confirm">
 ```
-Todo saved: .planning/todos/pending/[filename]
+Todo saved: $PROJECT_BASE/todos/pending/[filename]
 
   [title]
   Area: [area]
@@ -172,8 +177,8 @@ Would you like to:
 </process>
 
 <output>
-- `.planning/todos/pending/[date]-[slug].md`
-- Updated `.planning/STATE.md` (if exists)
+- `$PROJECT_BASE/todos/pending/[date]-[slug].md`
+- Updated `$PROJECT_BASE/STATE.md` (if exists)
 </output>
 
 <anti_patterns>

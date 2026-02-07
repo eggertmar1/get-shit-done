@@ -1,6 +1,11 @@
 ---
 name: gsd:add-phase
 description: Add phase to end of current milestone in roadmap
+
+<execution_context>
+@get-shit-done/references/active-project-validation.md
+</execution_context>
+
 argument-hint: <description>
 allowed-tools:
   - Read
@@ -17,8 +22,8 @@ Purpose: Add planned work discovered during execution that belongs at the end of
 </objective>
 
 <execution_context>
-@.planning/ROADMAP.md
-@.planning/STATE.md
+@$PROJECT_BASE/ROADMAP.md
+@$PROJECT_BASE/STATE.md
 </execution_context>
 
 <process>
@@ -44,10 +49,10 @@ Exit.
 Load the roadmap file:
 
 ```bash
-if [ -f .planning/ROADMAP.md ]; then
-  ROADMAP=".planning/ROADMAP.md"
+if [ -f $PROJECT_BASE/ROADMAP.md ]; then
+  ROADMAP="$PROJECT_BASE/ROADMAP.md"
 else
-  echo "ERROR: No roadmap found (.planning/ROADMAP.md)"
+  echo "ERROR: No roadmap found ($PROJECT_BASE/ROADMAP.md)"
   exit 1
 fi
 ```
@@ -107,7 +112,7 @@ Example: `07-add-authentication`
 Create the phase directory structure:
 
 ```bash
-phase_dir=".planning/phases/${phase_num}-${slug}"
+phase_dir="$PROJECT_BASE/phases/${phase_num}-${slug}"
 mkdir -p "$phase_dir"
 ```
 
@@ -142,7 +147,7 @@ Preserve all other content exactly (formatting, spacing, other phases).
 <step name="update_project_state">
 Update STATE.md to reflect the new phase:
 
-1. Read `.planning/STATE.md`
+1. Read `$PROJECT_BASE/STATE.md`
 2. Under "## Current Position" → "**Next Phase:**" add reference to new phase
 3. Under "## Accumulated Context" → "### Roadmap Evolution" add entry:
    ```
@@ -158,11 +163,11 @@ Present completion summary:
 ```
 Phase {N} added to current milestone:
 - Description: {description}
-- Directory: .planning/phases/{phase-num}-{slug}/
+- Directory: $PROJECT_BASE/phases/{phase-num}-{slug}/
 - Status: Not planned yet
 
 Roadmap updated: {roadmap-path}
-Project state updated: .planning/STATE.md
+Project state updated: $PROJECT_BASE/STATE.md
 
 ---
 
@@ -198,7 +203,7 @@ Project state updated: .planning/STATE.md
 <success_criteria>
 Phase addition is complete when:
 
-- [ ] Phase directory created: `.planning/phases/{NN}-{slug}/`
+- [ ] Phase directory created: `$PROJECT_BASE/phases/{NN}-{slug}/`
 - [ ] Roadmap updated with new phase entry
 - [ ] STATE.md updated with roadmap evolution note
 - [ ] New phase appears at end of current milestone

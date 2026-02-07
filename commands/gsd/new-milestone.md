@@ -1,6 +1,11 @@
 ---
 name: gsd:new-milestone
 description: Start a new milestone cycle — update PROJECT.md and route to requirements
+
+<execution_context>
+@get-shit-done/references/active-project-validation.md
+</execution_context>
+
 argument-hint: "[milestone name, e.g., 'v1.1 Notifications']"
 allowed-tools:
   - Read
@@ -16,11 +21,11 @@ Start a new milestone through unified flow: questioning → research (optional) 
 This is the brownfield equivalent of new-project. The project exists, PROJECT.md has history. This command gathers "what's next", updates PROJECT.md, then continues through the full requirements → roadmap cycle.
 
 **Creates/Updates:**
-- `.planning/PROJECT.md` — updated with new milestone goals
-- `.planning/research/` — domain research (optional, focuses on NEW features)
-- `.planning/REQUIREMENTS.md` — scoped requirements for this milestone
-- `.planning/ROADMAP.md` — phase structure (continues numbering)
-- `.planning/STATE.md` — reset for new milestone
+- `$PROJECT_BASE/PROJECT.md` — updated with new milestone goals
+- `$PROJECT_BASE/research/` — domain research (optional, focuses on NEW features)
+- `$PROJECT_BASE/REQUIREMENTS.md` — scoped requirements for this milestone
+- `$PROJECT_BASE/ROADMAP.md` — phase structure (continues numbering)
+- `$PROJECT_BASE/STATE.md` — reset for new milestone
 
 **After this command:** Run `/gsd:plan-phase [N]` to start execution.
 </objective>
@@ -36,8 +41,8 @@ This is the brownfield equivalent of new-project. The project exists, PROJECT.md
 Milestone name: $ARGUMENTS (optional - will prompt if not provided)
 
 **Load project context:**
-@.planning/PROJECT.md
-@.planning/STATE.md
+@$PROJECT_BASE/PROJECT.md
+@$PROJECT_BASE/STATE.md
 @.planning/MILESTONES.md
 @.planning/config.json
 
@@ -118,7 +123,7 @@ If `COMMIT_PLANNING_DOCS=false`: Skip git operations
 
 If `COMMIT_PLANNING_DOCS=true` (default):
 ```bash
-git add .planning/PROJECT.md .planning/STATE.md
+git add $PROJECT_BASE/PROJECT.md $PROJECT_BASE/STATE.md
 git commit -m "docs: start milestone v[X.Y] [Name]"
 ```
 
@@ -215,7 +220,7 @@ Your STACK.md feeds into roadmap creation. Be prescriptive:
 </quality_gate>
 
 <output>
-Write to: .planning/research/STACK.md
+Write to: $PROJECT_BASE/research/STACK.md
 Use template: ~/.claude/get-shit-done/templates/research-project/STACK.md
 </output>
 ", subagent_type="gsd-project-researcher", model="{researcher_model}", description="Stack research")
@@ -256,7 +261,7 @@ Your FEATURES.md feeds into requirements definition. Categorize clearly:
 </quality_gate>
 
 <output>
-Write to: .planning/research/FEATURES.md
+Write to: $PROJECT_BASE/research/FEATURES.md
 Use template: ~/.claude/get-shit-done/templates/research-project/FEATURES.md
 </output>
 ", subagent_type="gsd-project-researcher", model="{researcher_model}", description="Features research")
@@ -298,7 +303,7 @@ Your ARCHITECTURE.md informs phase structure in roadmap. Include:
 </quality_gate>
 
 <output>
-Write to: .planning/research/ARCHITECTURE.md
+Write to: $PROJECT_BASE/research/ARCHITECTURE.md
 Use template: ~/.claude/get-shit-done/templates/research-project/ARCHITECTURE.md
 </output>
 ", subagent_type="gsd-project-researcher", model="{researcher_model}", description="Architecture research")
@@ -336,7 +341,7 @@ Your PITFALLS.md prevents mistakes in roadmap/planning. For each pitfall:
 </quality_gate>
 
 <output>
-Write to: .planning/research/PITFALLS.md
+Write to: $PROJECT_BASE/research/PITFALLS.md
 Use template: ~/.claude/get-shit-done/templates/research-project/PITFALLS.md
 </output>
 ", subagent_type="gsd-project-researcher", model="{researcher_model}", description="Pitfalls research")
@@ -352,14 +357,14 @@ Synthesize research outputs into SUMMARY.md.
 
 <research_files>
 Read these files:
-- .planning/research/STACK.md
-- .planning/research/FEATURES.md
-- .planning/research/ARCHITECTURE.md
-- .planning/research/PITFALLS.md
+- $PROJECT_BASE/research/STACK.md
+- $PROJECT_BASE/research/FEATURES.md
+- $PROJECT_BASE/research/ARCHITECTURE.md
+- $PROJECT_BASE/research/PITFALLS.md
 </research_files>
 
 <output>
-Write to: .planning/research/SUMMARY.md
+Write to: $PROJECT_BASE/research/SUMMARY.md
 Use template: ~/.claude/get-shit-done/templates/research-project/SUMMARY.md
 Commit after writing.
 </output>
@@ -378,7 +383,7 @@ Display research complete banner and key findings:
 **New feature table stakes:** [from SUMMARY.md]
 **Watch Out For:** [from SUMMARY.md]
 
-Files: `.planning/research/`
+Files: `$PROJECT_BASE/research/`
 ```
 
 **If "Skip research":** Continue to Phase 8.
@@ -461,7 +466,7 @@ Use AskUserQuestion:
 
 **Generate REQUIREMENTS.md:**
 
-Create `.planning/REQUIREMENTS.md` with:
+Create `$PROJECT_BASE/REQUIREMENTS.md` with:
 - v1 Requirements for THIS milestone grouped by category (checkboxes, REQ-IDs)
 - Future Requirements (deferred to later milestones)
 - Out of Scope (explicit exclusions with reasoning)
@@ -508,7 +513,7 @@ Check planning config (same pattern as Phase 6).
 
 If committing:
 ```bash
-git add .planning/REQUIREMENTS.md
+git add $PROJECT_BASE/REQUIREMENTS.md
 git commit -m "$(cat <<'EOF'
 docs: define milestone v[X.Y] requirements
 
@@ -540,13 +545,13 @@ Task(prompt="
 <planning_context>
 
 **Project:**
-@.planning/PROJECT.md
+@$PROJECT_BASE/PROJECT.md
 
 **Requirements:**
-@.planning/REQUIREMENTS.md
+@$PROJECT_BASE/REQUIREMENTS.md
 
 **Research (if exists):**
-@.planning/research/SUMMARY.md
+@$PROJECT_BASE/research/SUMMARY.md
 
 **Config:**
 @.planning/config.json
@@ -630,7 +635,7 @@ Use AskUserQuestion:
   User feedback on roadmap:
   [user's notes]
 
-  Current ROADMAP.md: @.planning/ROADMAP.md
+  Current ROADMAP.md: @$PROJECT_BASE/ROADMAP.md
 
   Update the roadmap based on feedback. Edit files in place.
   Return ROADMAP REVISED with changes made.
@@ -640,7 +645,7 @@ Use AskUserQuestion:
 - Present revised roadmap
 - Loop until user approves
 
-**If "Review full file":** Display raw `cat .planning/ROADMAP.md`, then re-ask.
+**If "Review full file":** Display raw `cat $PROJECT_BASE/ROADMAP.md`, then re-ask.
 
 **Commit roadmap (after approval):**
 
@@ -648,7 +653,7 @@ Check planning config (same pattern as Phase 6).
 
 If committing:
 ```bash
-git add .planning/ROADMAP.md .planning/STATE.md .planning/REQUIREMENTS.md
+git add $PROJECT_BASE/ROADMAP.md $PROJECT_BASE/STATE.md $PROJECT_BASE/REQUIREMENTS.md
 git commit -m "$(cat <<'EOF'
 docs: create milestone v[X.Y] roadmap ([N] phases)
 
@@ -675,10 +680,10 @@ Present completion with next steps:
 
 | Artifact       | Location                    |
 |----------------|-----------------------------|
-| Project        | `.planning/PROJECT.md`      |
-| Research       | `.planning/research/`       |
-| Requirements   | `.planning/REQUIREMENTS.md` |
-| Roadmap        | `.planning/ROADMAP.md`      |
+| Project        | `$PROJECT_BASE/PROJECT.md`      |
+| Research       | `$PROJECT_BASE/research/`       |
+| Requirements   | `$PROJECT_BASE/REQUIREMENTS.md` |
+| Roadmap        | `$PROJECT_BASE/ROADMAP.md`      |
 
 **[N] phases** | **[X] requirements** | Ready to build ✓
 

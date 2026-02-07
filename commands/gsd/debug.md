@@ -1,6 +1,11 @@
 ---
 name: gsd:debug
 description: Systematic debugging with persistent state across context resets
+
+<execution_context>
+@get-shit-done/references/active-project-validation.md
+</execution_context>
+
 argument-hint: [issue description]
 allowed-tools:
   - Read
@@ -22,7 +27,7 @@ User's issue: $ARGUMENTS
 
 Check for active sessions:
 ```bash
-ls .planning/debug/*.md 2>/dev/null | grep -v resolved | head -5
+ls $PROJECT_BASE/debug/*.md 2>/dev/null | grep -v resolved | head -5
 ```
 </context>
 
@@ -92,7 +97,7 @@ goal: find_and_fix
 </mode>
 
 <debug_file>
-Create: .planning/debug/{slug}.md
+Create: $PROJECT_BASE/debug/{slug}.md
 </debug_file>
 ```
 
@@ -136,7 +141,7 @@ Continue debugging {slug}. Evidence is in the debug file.
 </objective>
 
 <prior_state>
-Debug file: @.planning/debug/{slug}.md
+Debug file: @$PROJECT_BASE/debug/{slug}.md
 </prior_state>
 
 <checkpoint_response>

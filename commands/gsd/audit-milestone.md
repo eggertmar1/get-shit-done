@@ -1,6 +1,11 @@
 ---
 name: gsd:audit-milestone
 description: Audit milestone completion against original intent before archiving
+
+<execution_context>
+@get-shit-done/references/active-project-validation.md
+</execution_context>
+
 argument-hint: "[version]"
 allowed-tools:
   - Read
@@ -25,16 +30,16 @@ Verify milestone achieved its definition of done. Check requirements coverage, c
 Version: $ARGUMENTS (optional — defaults to current milestone)
 
 **Original Intent:**
-@.planning/PROJECT.md
-@.planning/REQUIREMENTS.md
+@$PROJECT_BASE/PROJECT.md
+@$PROJECT_BASE/REQUIREMENTS.md
 
 **Planned Work:**
-@.planning/ROADMAP.md
+@$PROJECT_BASE/ROADMAP.md
 @.planning/config.json (if exists)
 
 **Completed Work:**
-Glob: .planning/phases/*/*-SUMMARY.md
-Glob: .planning/phases/*/*-VERIFICATION.md
+Glob: $PROJECT_BASE/phases/*/*-SUMMARY.md
+Glob: $PROJECT_BASE/phases/*/*-VERIFICATION.md
 </context>
 
 <process>
@@ -61,7 +66,7 @@ Store resolved model for use in Task call below.
 
 ```bash
 # Get phases in milestone
-ls -d .planning/phases/*/ | sort -V
+ls -d $PROJECT_BASE/phases/*/ | sort -V
 ```
 
 - Parse version from arguments or detect current from ROADMAP.md
@@ -74,8 +79,8 @@ ls -d .planning/phases/*/ | sort -V
 For each phase directory, read the VERIFICATION.md:
 
 ```bash
-cat .planning/phases/01-*/*-VERIFICATION.md
-cat .planning/phases/02-*/*-VERIFICATION.md
+cat $PROJECT_BASE/phases/01-*/*-VERIFICATION.md
+cat $PROJECT_BASE/phases/02-*/*-VERIFICATION.md
 # etc.
 ```
 

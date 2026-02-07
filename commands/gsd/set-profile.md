@@ -1,6 +1,11 @@
 ---
 name: set-profile
 description: Switch model profile for GSD agents (quality/balanced/budget)
+
+<execution_context>
+@get-shit-done/references/active-project-validation.md
+</execution_context>
+
 arguments:
   - name: profile
     description: "Profile name: quality, balanced, or budget"

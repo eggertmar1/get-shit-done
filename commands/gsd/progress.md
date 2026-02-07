@@ -1,6 +1,11 @@
 ---
 name: gsd:progress
 description: Check project progress, show context, and route to next action (execute or plan)
+
+<execution_context>
+@get-shit-done/references/active-project-validation.md
+</execution_context>
+
 allowed-tools:
   - Read
   - Bash
@@ -49,9 +54,9 @@ If missing both ROADMAP.md and PROJECT.md: suggest `/gsd:new-project`.
 <step name="load">
 **Load full project context:**
 
-- Read `.planning/STATE.md` for living memory (position, decisions, issues)
-- Read `.planning/ROADMAP.md` for phase structure and objectives
-- Read `.planning/PROJECT.md` for current state (What This Is, Core Value, Requirements)
+- Read `$PROJECT_BASE/STATE.md` for living memory (position, decisions, issues)
+- Read `$PROJECT_BASE/ROADMAP.md` for phase structure and objectives
+- Read `$PROJECT_BASE/PROJECT.md` for current state (What This Is, Core Value, Requirements)
 - Read `.planning/config.json` for settings (model_profile, workflow toggles)
   </step>
 
@@ -70,8 +75,8 @@ If missing both ROADMAP.md and PROJECT.md: suggest `/gsd:new-project`.
 - Calculate: total plans, completed plans, remaining plans
 - Note any blockers or concerns
 - Check for CONTEXT.md: For phases without PLAN.md files, check if `{phase}-CONTEXT.md` exists in phase directory
-- Count pending todos: `ls .planning/todos/pending/*.md 2>/dev/null | wc -l`
-- Check for active debug sessions: `ls .planning/debug/*.md 2>/dev/null | grep -v resolved | wc -l`
+- Count pending todos: `ls $PROJECT_BASE/todos/pending/*.md 2>/dev/null | wc -l`
+- Check for active debug sessions: `ls $PROJECT_BASE/debug/*.md 2>/dev/null | grep -v resolved | wc -l`
   </step>
 
 <step name="report">
@@ -120,9 +125,9 @@ CONTEXT: [✓ if CONTEXT.md exists | - if not]
 List files in the current phase directory:
 
 ```bash
-ls -1 .planning/phases/[current-phase-dir]/*-PLAN.md 2>/dev/null | wc -l
-ls -1 .planning/phases/[current-phase-dir]/*-SUMMARY.md 2>/dev/null | wc -l
-ls -1 .planning/phases/[current-phase-dir]/*-UAT.md 2>/dev/null | wc -l
+ls -1 $PROJECT_BASE/phases/[current-phase-dir]/*-PLAN.md 2>/dev/null | wc -l
+ls -1 $PROJECT_BASE/phases/[current-phase-dir]/*-SUMMARY.md 2>/dev/null | wc -l
+ls -1 $PROJECT_BASE/phases/[current-phase-dir]/*-UAT.md 2>/dev/null | wc -l
 ```
 
 State: "This phase has {X} plans, {Y} summaries."
@@ -133,7 +138,7 @@ Check for UAT.md files with status "diagnosed" (has gaps needing fixes).
 
 ```bash
 # Check for diagnosed UAT with gaps
-grep -l "status: diagnosed" .planning/phases/[current-phase-dir]/*-UAT.md 2>/dev/null
+grep -l "status: diagnosed" $PROJECT_BASE/phases/[current-phase-dir]/*-UAT.md 2>/dev/null
 ```
 
 Track:

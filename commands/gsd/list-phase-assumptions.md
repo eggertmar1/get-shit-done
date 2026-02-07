@@ -1,6 +1,11 @@
 ---
 name: gsd:list-phase-assumptions
 description: Surface Claude's assumptions about a phase approach before planning
+
+<execution_context>
+@get-shit-done/references/active-project-validation.md
+</execution_context>
+
 argument-hint: "[phase]"
 allowed-tools:
   - Read
@@ -24,10 +29,10 @@ Output: Conversational output only (no file creation) - ends with "What do you t
 Phase number: $ARGUMENTS (required)
 
 **Load project state first:**
-@.planning/STATE.md
+@$PROJECT_BASE/STATE.md
 
 **Load roadmap:**
-@.planning/ROADMAP.md
+@$PROJECT_BASE/ROADMAP.md
 </context>
 
 <process>

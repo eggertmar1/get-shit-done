@@ -1,6 +1,11 @@
 ---
 name: gsd:plan-milestone-gaps
 description: Create phases to close all gaps identified by milestone audit
+
+<execution_context>
+@get-shit-done/references/active-project-validation.md
+</execution_context>
+
 allowed-tools:
   - Read
   - Write
@@ -27,12 +32,12 @@ One command creates all fix phases — no manual `/gsd:add-phase` per gap.
 Glob: .planning/v*-MILESTONE-AUDIT.md (use most recent)
 
 **Original intent (for prioritization):**
-@.planning/PROJECT.md
-@.planning/REQUIREMENTS.md
+@$PROJECT_BASE/PROJECT.md
+@$PROJECT_BASE/REQUIREMENTS.md
 
 **Current state:**
-@.planning/ROADMAP.md
-@.planning/STATE.md
+@$PROJECT_BASE/ROADMAP.md
+@$PROJECT_BASE/STATE.md
 </context>
 
 <process>
@@ -93,7 +98,7 @@ Gap: Flow "View dashboard" broken at data fetch
 
 Find highest existing phase:
 ```bash
-ls -d .planning/phases/*/ | sort -V | tail -1
+ls -d $PROJECT_BASE/phases/*/ | sort -V | tail -1
 ```
 
 New phases continue from there:
@@ -153,7 +158,7 @@ Add new phases to current milestone:
 ## 7. Create Phase Directories
 
 ```bash
-mkdir -p ".planning/phases/{NN}-{name}"
+mkdir -p "$PROJECT_BASE/phases/{NN}-{name}"
 ```
 
 ## 8. Commit Roadmap Update
@@ -170,7 +175,7 @@ git check-ignore -q .planning 2>/dev/null && COMMIT_PLANNING_DOCS=false
 **If `COMMIT_PLANNING_DOCS=true` (default):**
 
 ```bash
-git add .planning/ROADMAP.md
+git add $PROJECT_BASE/ROADMAP.md
 git commit -m "docs(roadmap): add gap closure phases {N}-{M}"
 ```
 
@@ -196,7 +201,7 @@ git commit -m "docs(roadmap): add gap closure phases {N}-{M}"
 
 **Also available:**
 - `/gsd:execute-phase {N}` — if plans already exist
-- `cat .planning/ROADMAP.md` — see updated roadmap
+- `cat $PROJECT_BASE/ROADMAP.md` — see updated roadmap
 
 ---
 

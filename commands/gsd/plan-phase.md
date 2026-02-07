@@ -1,6 +1,11 @@
 ---
 name: gsd:plan-phase
 description: Create detailed execution plan for a phase (PLAN.md) with verification loop
+
+<execution_context>
+@get-shit-done/references/active-project-validation.md
+</execution_context>
+
 argument-hint: "[phase] [--research] [--skip-research] [--gaps] [--skip-verify]"
 agent: gsd-planner
 allowed-tools:
@@ -94,14 +99,14 @@ fi
 **Check for existing research and plans:**
 
 ```bash
-ls .planning/phases/${PHASE}-*/*-RESEARCH.md 2>/dev/null
-ls .planning/phases/${PHASE}-*/*-PLAN.md 2>/dev/null
+ls $PROJECT_BASE/phases/${PHASE}-*/*-RESEARCH.md 2>/dev/null
+ls $PROJECT_BASE/phases/${PHASE}-*/*-PLAN.md 2>/dev/null
 ```
 
 ## 3. Validate Phase
 
 ```bash
-grep -A5 "Phase ${PHASE}:" .planning/ROADMAP.md 2>/dev/null
+grep -A5 "Phase ${PHASE}:" $PROJECT_BASE/ROADMAP.md 2>/dev/null
 ```
 
 **If not found:** Error with available phases. **If found:** Extract phase number, name, description.
@@ -110,12 +115,12 @@ grep -A5 "Phase ${PHASE}:" .planning/ROADMAP.md 2>/dev/null
 
 ```bash
 # PHASE is already normalized (08, 02.1, etc.) from step 2
-PHASE_DIR=$(ls -d .planning/phases/${PHASE}-* 2>/dev/null | head -1)
+PHASE_DIR=$(ls -d $PROJECT_BASE/phases/${PHASE}-* 2>/dev/null | head -1)
 if [ -z "$PHASE_DIR" ]; then
   # Create phase directory from roadmap name
-  PHASE_NAME=$(grep "Phase ${PHASE}:" .planning/ROADMAP.md | sed 's/.*Phase [0-9]*: //' | tr '[:upper:]' '[:lower:]' | tr ' ' '-')
-  mkdir -p ".planning/phases/${PHASE}-${PHASE_NAME}"
-  PHASE_DIR=".planning/phases/${PHASE}-${PHASE_NAME}"
+  PHASE_NAME=$(grep "Phase ${PHASE}:" $PROJECT_BASE/ROADMAP.md | sed 's/.*Phase [0-9]*: //' | tr '[:upper:]' '[:lower:]' | tr ' ' '-')
+  mkdir -p "$PROJECT_BASE/phases/${PHASE}-${PHASE_NAME}"
+  PHASE_DIR="$PROJECT_BASE/phases/${PHASE}-${PHASE_NAME}"
 fi
 
 # Load CONTEXT.md immediately - this informs ALL downstream agents
@@ -175,13 +180,13 @@ Gather additional context for research prompt:
 
 ```bash
 # Get phase description from roadmap
-PHASE_DESC=$(grep -A3 "Phase ${PHASE}:" .planning/ROADMAP.md)
+PHASE_DESC=$(grep -A3 "Phase ${PHASE}:" $PROJECT_BASE/ROADMAP.md)
 
 # Get requirements if they exist
-REQUIREMENTS=$(cat .planning/REQUIREMENTS.md 2>/dev/null | grep -A100 "## Requirements" | head -50)
+REQUIREMENTS=$(cat $PROJECT_BASE/REQUIREMENTS.md 2>/dev/null | grep -A100 "## Requirements" | head -50)
 
 # Get prior decisions from STATE.md
-DECISIONS=$(grep -A20 "### Decisions Made" .planning/STATE.md 2>/dev/null)
+DECISIONS=$(grep -A20 "### Decisions Made" $PROJECT_BASE/STATE.md 2>/dev/null)
 
 # CONTEXT_CONTENT already loaded in step 4
 ```
@@ -255,11 +260,11 @@ Read and store context file contents for the planner agent. The `@` syntax does 
 
 ```bash
 # Read required files
-STATE_CONTENT=$(cat .planning/STATE.md)
-ROADMAP_CONTENT=$(cat .planning/ROADMAP.md)
+STATE_CONTENT=$(cat $PROJECT_BASE/STATE.md)
+ROADMAP_CONTENT=$(cat $PROJECT_BASE/ROADMAP.md)
 
 # Read optional files (empty string if missing)
-REQUIREMENTS_CONTENT=$(cat .planning/REQUIREMENTS.md 2>/dev/null)
+REQUIREMENTS_CONTENT=$(cat $PROJECT_BASE/REQUIREMENTS.md 2>/dev/null)
 # CONTEXT_CONTENT already loaded in step 4
 RESEARCH_CONTENT=$(cat "${PHASE_DIR}"/*-RESEARCH.md 2>/dev/null)
 
@@ -545,7 +550,7 @@ Verification: {Passed | Passed with override | Skipped}
 ───────────────────────────────────────────────────────────────
 
 **Also available:**
-- cat .planning/phases/{phase-dir}/*-PLAN.md — review plans
+- cat $PROJECT_BASE/phases/{phase-dir}/*-PLAN.md — review plans
 - /gsd:plan-phase {X} --research — re-research first
 
 ───────────────────────────────────────────────────────────────

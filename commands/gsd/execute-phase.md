@@ -1,6 +1,11 @@
 ---
 name: gsd:execute-phase
 description: Execute all plans in a phase with wave-based parallelization
+
+<execution_context>
+@get-shit-done/references/active-project-validation.md
+</execution_context>
+
 argument-hint: "<phase-number> [--gaps-only]"
 allowed-tools:
   - Read
@@ -33,8 +38,8 @@ Phase: $ARGUMENTS
 **Flags:**
 - `--gaps-only` — Execute only gap closure plans (plans with `gap_closure: true` in frontmatter). Use after verify-work creates fix plans.
 
-@.planning/ROADMAP.md
-@.planning/STATE.md
+@$PROJECT_BASE/ROADMAP.md
+@$PROJECT_BASE/STATE.md
 </context>
 
 <process>
@@ -129,8 +134,8 @@ Phase: $ARGUMENTS
     Check `COMMIT_PLANNING_DOCS` from config.json (default: true).
     If false: Skip git operations for .planning/ files.
     If true: Bundle all phase metadata updates in one commit:
-    - Stage: `git add .planning/ROADMAP.md .planning/STATE.md`
-    - Stage REQUIREMENTS.md if updated: `git add .planning/REQUIREMENTS.md`
+    - Stage: `git add $PROJECT_BASE/ROADMAP.md $PROJECT_BASE/STATE.md`
+    - Stage REQUIREMENTS.md if updated: `git add $PROJECT_BASE/REQUIREMENTS.md`
     - Commit: `docs({phase}): complete {phase-name} phase`
 
 11. **Offer next steps**
@@ -220,7 +225,7 @@ All phase goals verified ✓
 **Phase {Z}: {Name}**
 
 Score: {N}/{M} must-haves verified
-Report: .planning/phases/{phase_dir}/{phase}-VERIFICATION.md
+Report: $PROJECT_BASE/phases/{phase_dir}/{phase}-VERIFICATION.md
 
 ### What's Missing
 
@@ -239,7 +244,7 @@ Report: .planning/phases/{phase_dir}/{phase}-VERIFICATION.md
 ───────────────────────────────────────────────────────────────
 
 **Also available:**
-- cat .planning/phases/{phase_dir}/{phase}-VERIFICATION.md — see full report
+- cat $PROJECT_BASE/phases/{phase_dir}/{phase}-VERIFICATION.md — see full report
 - /gsd:verify-work {Z} — manual testing before planning
 
 ───────────────────────────────────────────────────────────────
@@ -264,7 +269,7 @@ Before spawning, read file contents. The `@` syntax does not work across Task() 
 PLAN_01_CONTENT=$(cat "{plan_01_path}")
 PLAN_02_CONTENT=$(cat "{plan_02_path}")
 PLAN_03_CONTENT=$(cat "{plan_03_path}")
-STATE_CONTENT=$(cat .planning/STATE.md)
+STATE_CONTENT=$(cat $PROJECT_BASE/STATE.md)
 ```
 
 Spawn all plans in a wave with a single message containing multiple Task calls, with inlined content:
