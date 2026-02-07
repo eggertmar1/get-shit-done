@@ -9,15 +9,38 @@ The orchestrator's job is coordination, not execution. Each subagent loads the f
 <required_reading>
 Read STATE.md before any operation to load project context.
 Read config.json for planning behavior settings.
+
+@get-shit-done/references/path-resolution.md
+@get-shit-done/references/active-project-validation.md
 </required_reading>
 
 <process>
+
+<step name="resolve_planning_paths" priority="first">
+Resolve planning paths to support both flat and multi-project structures:
+
+```bash
+# Detect structure and set PROJECT_BASE
+if [ -d .planning/projects/ ]; then
+  ACTIVE_PROJECT=$(cat .planning/.active | tr -d '[:space:]')
+  PROJECT_BASE=".planning/projects/$ACTIVE_PROJECT"
+else
+  PROJECT_BASE=".planning"
+fi
+
+# Shared paths (always at root)
+GLOBAL_CONFIG=".planning/config.json"
+```
+
+All project-specific file operations throughout this workflow use `$PROJECT_BASE`.
+Shared files (codebase/, config.json) remain at `.planning/` root.
+</step>
 
 <step name="resolve_model_profile" priority="first">
 Read model profile for agent spawning:
 
 ```bash
-MODEL_PROFILE=$(cat .planning/config.json 2>/dev/null | grep -o '"model_profile"[[:space:]]*:[[:space:]]*"[^"]*"' | grep -o '"[^"]*"$' | tr -d '"' || echo "balanced")
+MODEL_PROFILE=$(cat $GLOBAL_CONFIG 2>/dev/null | grep -o '"model_profile"[[:space:]]*:[[:space:]]*"[^"]*"' | grep -o '"[^"]*"$' | tr -d '"' || echo "balanced")
 ```
 
 Default to "balanced" if not set.
@@ -37,7 +60,7 @@ Store resolved models for use in Task calls below.
 Before any operation, read project state:
 
 ```bash
-cat .planning/STATE.md 2>/dev/null
+cat $PROJECT_BASE/STATE.md 2>/dev/null
 ```
 
 **If file exists:** Parse and internalize:
@@ -45,7 +68,7 @@ cat .planning/STATE.md 2>/dev/null
 - Accumulated decisions (constraints on this execution)
 - Blockers/concerns (things to watch for)
 
-**If file missing but .planning/ exists:**
+**If file missing but PROJECT_BASE exists:**
 ```
 STATE.md missing but planning artifacts exist.
 Options:
@@ -59,7 +82,7 @@ Options:
 
 ```bash
 # Check if planning docs should be committed (default: true)
-COMMIT_PLANNING_DOCS=$(cat .planning/config.json 2>/dev/null | grep -o '"commit_docs"[[:space:]]*:[[:space:]]*[^,}]*' | grep -o 'true\|false' || echo "true")
+COMMIT_PLANNING_DOCS=$(cat $GLOBAL_CONFIG 2>/dev/null | grep -o '"commit_docs"[[:space:]]*:[[:space:]]*[^,}]*' | grep -o 'true\|false' || echo "true")
 # Auto-detect gitignored (overrides config)
 git check-ignore -q .planning 2>/dev/null && COMMIT_PLANNING_DOCS=false
 ```
@@ -70,7 +93,7 @@ Store `COMMIT_PLANNING_DOCS` for use in git operations.
 
 ```bash
 # Check if parallelization is enabled (default: true)
-PARALLELIZATION=$(cat .planning/config.json 2>/dev/null | grep -o '"parallelization"[[:space:]]*:[[:space:]]*[^,}]*' | grep -o 'true\|false' || echo "true")
+PARALLELIZATION=$(cat $GLOBAL_CONFIG 2>/dev/null | grep -o '"parallelization"[[:space:]]*:[[:space:]]*[^,}]*' | grep -o 'true\|false' || echo "true")
 ```
 
 Store `PARALLELIZATION` for use in wave execution step. When `false`, plans within a wave execute sequentially instead of in parallel.
@@ -79,11 +102,11 @@ Store `PARALLELIZATION` for use in wave execution step. When `false`, plans with
 
 ```bash
 # Get branching strategy (default: none)
-BRANCHING_STRATEGY=$(cat .planning/config.json 2>/dev/null | grep -o '"branching_strategy"[[:space:]]*:[[:space:]]*"[^"]*"' | sed 's/.*:.*"\([^"]*\)"/\1/' || echo "none")
+BRANCHING_STRATEGY=$(cat $GLOBAL_CONFIG 2>/dev/null | grep -o '"branching_strategy"[[:space:]]*:[[:space:]]*"[^"]*"' | sed 's/.*:.*"\([^"]*\)"/\1/' || echo "none")
 
 # Get templates
-PHASE_BRANCH_TEMPLATE=$(cat .planning/config.json 2>/dev/null | grep -o '"phase_branch_template"[[:space:]]*:[[:space:]]*"[^"]*"' | sed 's/.*:.*"\([^"]*\)"/\1/' || echo "gsd/phase-{phase}-{slug}")
-MILESTONE_BRANCH_TEMPLATE=$(cat .planning/config.json 2>/dev/null | grep -o '"milestone_branch_template"[[:space:]]*:[[:space:]]*"[^"]*"' | sed 's/.*:.*"\([^"]*\)"/\1/' || echo "gsd/{milestone}-{slug}")
+PHASE_BRANCH_TEMPLATE=$(cat $GLOBAL_CONFIG 2>/dev/null | grep -o '"phase_branch_template"[[:space:]]*:[[:space:]]*"[^"]*"' | sed 's/.*:.*"\([^"]*\)"/\1/' || echo "gsd/phase-{phase}-{slug}")
+MILESTONE_BRANCH_TEMPLATE=$(cat $GLOBAL_CONFIG 2>/dev/null | grep -o '"milestone_branch_template"[[:space:]]*:[[:space:]]*"[^"]*"' | sed 's/.*:.*"\([^"]*\)"/\1/' || echo "gsd/{milestone}-{slug}")
 ```
 
 Store `BRANCHING_STRATEGY` and templates for use in branch creation step.
@@ -126,8 +149,8 @@ fi
 ```bash
 if [ "$BRANCHING_STRATEGY" = "milestone" ]; then
   # Get current milestone info from ROADMAP.md
-  MILESTONE_VERSION=$(grep -oE 'v[0-9]+\.[0-9]+' .planning/ROADMAP.md | head -1 || echo "v1.0")
-  MILESTONE_NAME=$(grep -A1 "## .*$MILESTONE_VERSION" .planning/ROADMAP.md | tail -1 | sed 's/.*- //' | cut -d'(' -f1 | tr -d ' ' || echo "milestone")
+  MILESTONE_VERSION=$(grep -oE 'v[0-9]+\.[0-9]+' $PROJECT_BASE/ROADMAP.md | head -1 || echo "v1.0")
+  MILESTONE_NAME=$(grep -A1 "## .*$MILESTONE_VERSION" $PROJECT_BASE/ROADMAP.md | tail -1 | sed 's/.*- //' | cut -d'(' -f1 | tr -d ' ' || echo "milestone")
 
   # Create slug
   MILESTONE_SLUG=$(echo "$MILESTONE_NAME" | tr '[:upper:]' '[:lower:]' | sed 's/[^a-z0-9]/-/g' | sed 's/--*/-/g' | sed 's/^-//;s/-$//')
@@ -157,7 +180,7 @@ Confirm phase exists and has plans:
 ```bash
 # Match both zero-padded (05-*) and unpadded (5-*) folders
 PADDED_PHASE=$(printf "%02d" ${PHASE_ARG} 2>/dev/null || echo "${PHASE_ARG}")
-PHASE_DIR=$(ls -d .planning/phases/${PADDED_PHASE}-* .planning/phases/${PHASE_ARG}-* 2>/dev/null | head -1)
+PHASE_DIR=$(ls -d $PROJECT_BASE/phases/${PADDED_PHASE}-* $PROJECT_BASE/phases/${PHASE_ARG}-* 2>/dev/null | head -1)
 if [ -z "$PHASE_DIR" ]; then
   echo "ERROR: No phase directory matching '${PHASE_ARG}'"
   exit 1
@@ -283,8 +306,8 @@ Execute each wave in sequence. Autonomous plans within a wave run in parallel **
    ```bash
    # Read each plan in the wave
    PLAN_CONTENT=$(cat "{plan_path}")
-   STATE_CONTENT=$(cat .planning/STATE.md)
-   CONFIG_CONTENT=$(cat .planning/config.json 2>/dev/null)
+   STATE_CONTENT=$(cat $PROJECT_BASE/STATE.md)
+   CONFIG_CONTENT=$(cat $GLOBAL_CONFIG 2>/dev/null)
    ```
 
    **If `PARALLELIZATION=true` (default):** Use Task tool with multiple parallel calls.
@@ -607,8 +630,8 @@ If `COMMIT_PLANNING_DOCS=true` (default):
 
 Commit phase completion (roadmap, state, verification):
 ```bash
-git add .planning/ROADMAP.md .planning/STATE.md .planning/phases/{phase_dir}/*-VERIFICATION.md
-git add .planning/REQUIREMENTS.md  # if updated
+git add $PROJECT_BASE/ROADMAP.md $PROJECT_BASE/STATE.md $PROJECT_BASE/phases/{phase_dir}/*-VERIFICATION.md
+git add $PROJECT_BASE/REQUIREMENTS.md  # if updated
 git commit -m "docs(phase-{X}): complete phase execution"
 ```
 </step>
