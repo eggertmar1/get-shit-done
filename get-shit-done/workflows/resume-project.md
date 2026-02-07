@@ -12,22 +12,40 @@ Instantly restore full project context so "Where were we?" has an immediate, com
 
 <required_reading>
 @~/.claude/get-shit-done/references/continuation-format.md
+@get-shit-done/references/path-resolution.md
+@get-shit-done/references/active-project-validation.md
 </required_reading>
 
 <process>
+
+<step name="resolve_planning_paths" priority="first">
+Resolve planning paths to support both flat and multi-project structures:
+
+```bash
+# Detect structure and set PROJECT_BASE
+if [ -d .planning/projects/ ]; then
+  ACTIVE_PROJECT=$(cat .planning/.active | tr -d '[:space:]')
+  PROJECT_BASE=".planning/projects/$ACTIVE_PROJECT"
+else
+  PROJECT_BASE=".planning"
+fi
+```
+
+All project-specific file operations throughout this workflow use `$PROJECT_BASE`.
+</step>
 
 <step name="detect_existing_project">
 Check if this is an existing project:
 
 ```bash
-ls .planning/STATE.md 2>/dev/null && echo "Project exists"
-ls .planning/ROADMAP.md 2>/dev/null && echo "Roadmap exists"
-ls .planning/PROJECT.md 2>/dev/null && echo "Project file exists"
+ls $PROJECT_BASE/STATE.md 2>/dev/null && echo "Project exists"
+ls $PROJECT_BASE/ROADMAP.md 2>/dev/null && echo "Roadmap exists"
+ls $PROJECT_BASE/PROJECT.md 2>/dev/null && echo "Project file exists"
 ```
 
 **If STATE.md exists:** Proceed to load_state
-**If only ROADMAP.md/PROJECT.md exist:** Offer to reconstruct STATE.md
-**If .planning/ doesn't exist:** This is a new project - route to /gsd:new-project
+**If only ROADMAP.md/PROJECT.MD exist:** Offer to reconstruct STATE.md
+**If PROJECT_BASE doesn't exist:** This is a new project - route to /gsd:new-project
 </step>
 
 <step name="load_state">
@@ -35,8 +53,8 @@ ls .planning/PROJECT.md 2>/dev/null && echo "Project file exists"
 Read and parse STATE.md, then PROJECT.md:
 
 ```bash
-cat .planning/STATE.md
-cat .planning/PROJECT.md
+cat $PROJECT_BASE/STATE.md
+cat $PROJECT_BASE/PROJECT.md
 ```
 
 **From STATE.md extract:**
@@ -63,17 +81,17 @@ Look for incomplete work that needs attention:
 
 ```bash
 # Check for continue-here files (mid-plan resumption)
-ls .planning/phases/*/.continue-here*.md 2>/dev/null
+ls $PROJECT_BASE/phases/*/.continue-here*.md 2>/dev/null
 
 # Check for plans without summaries (incomplete execution)
-for plan in .planning/phases/*/*-PLAN.md; do
+for plan in $PROJECT_BASE/phases/*/*-PLAN.md; do
   summary="${plan/PLAN/SUMMARY}"
   [ ! -f "$summary" ] && echo "Incomplete: $plan"
 done 2>/dev/null
 
 # Check for interrupted agents
-if [ -f .planning/current-agent-id.txt ] && [ -s .planning/current-agent-id.txt ]; then
-  AGENT_ID=$(cat .planning/current-agent-id.txt | tr -d '\n')
+if [ -f $PROJECT_BASE/current-agent-id.txt ] && [ -s $PROJECT_BASE/current-agent-id.txt ]; then
+  AGENT_ID=$(cat $PROJECT_BASE/current-agent-id.txt | tr -d '\n')
   echo "Interrupted agent: $AGENT_ID"
 fi
 ```
@@ -197,7 +215,7 @@ What would you like to do?
 **Note:** When offering phase planning, check for CONTEXT.md existence first:
 
 ```bash
-ls .planning/phases/XX-name/*-CONTEXT.md 2>/dev/null
+ls $PROJECT_BASE/phases/XX-name/*-CONTEXT.md 2>/dev/null
 ```
 
 If missing, suggest discuss-phase before plan. If exists, offer plan directly.
