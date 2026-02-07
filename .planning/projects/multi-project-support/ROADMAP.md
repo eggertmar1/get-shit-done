@@ -75,8 +75,8 @@ Plans:
 **Plans**: 2 plans
 
 Plans:
-- [ ] 04-01: Update all orchestrators and agents for project-aware paths
-- [ ] 04-02: Cross-runtime testing and gitignore configuration
+- [ ] 04-01: Gitignore .active + integrate path resolution into 3 core workflows and 3 core agents
+- [ ] 04-02: Integrate remaining 9 workflows, 8 agents, ~19 commands + cross-runtime verification
 
 ## Progress
 
