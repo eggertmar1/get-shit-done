@@ -3,26 +3,103 @@
 Configuration options for `.planning/` directory behavior.
 
 <config_schema>
+
+## Flattened Dot-Notation Format
+
+GSD uses a flattened config structure with dot-notation keys instead of nested objects. This prevents shallow merge issues when per-project configs override global defaults.
+
+**Complete config schema:**
+
 ```json
-"planning": {
+{
+  "mode": "yolo",
+  "depth": "quick",
+  "parallelization": true,
   "commit_docs": true,
-  "search_gitignored": false
-},
-"git": {
-  "branching_strategy": "none",
-  "phase_branch_template": "gsd/phase-{phase}-{slug}",
-  "milestone_branch_template": "gsd/{milestone}-{slug}"
+  "model_profile": "balanced",
+  "workflow.research": true,
+  "workflow.plan_check": true,
+  "workflow.verifier": true,
+  "planning.search_gitignored": false,
+  "git.branching_strategy": "none",
+  "git.phase_branch_template": "gsd/phase-{phase}-{slug}",
+  "git.milestone_branch_template": "gsd/{milestone}-{slug}"
 }
 ```
 
+**All available options:**
+
 | Option | Default | Description |
 |--------|---------|-------------|
+| `mode` | `"yolo"` | Workflow execution style: `"yolo"`, `"careful"`, or `"strategic"` |
+| `depth` | `"quick"` | Planning depth: `"quick"`, `"standard"`, or `"comprehensive"` |
+| `parallelization` | `true` | Execute plans in parallel when possible |
 | `commit_docs` | `true` | Whether to commit planning artifacts to git |
-| `search_gitignored` | `false` | Add `--no-ignore` to broad rg searches |
+| `model_profile` | `"balanced"` | Model selection: `"quality"`, `"balanced"`, or `"budget"` |
+| `workflow.research` | `true` | Spawn researcher during plan-phase |
+| `workflow.plan_check` | `true` | Spawn plan checker during plan-phase |
+| `workflow.verifier` | `true` | Spawn verifier during execute-phase |
+| `planning.search_gitignored` | `false` | Add `--no-ignore` to broad rg searches (global-only) |
 | `git.branching_strategy` | `"none"` | Git branching approach: `"none"`, `"phase"`, or `"milestone"` |
 | `git.phase_branch_template` | `"gsd/phase-{phase}-{slug}"` | Branch template for phase strategy |
 | `git.milestone_branch_template` | `"gsd/{milestone}-{slug}"` | Branch template for milestone strategy |
+
+**Backwards compatibility:** Existing configs with nested format (e.g., `"workflow": {"research": true}`) still work, but flat format is recommended for new configs and required for proper per-project overrides.
+
 </config_schema>
+
+<multi_project_config>
+
+## Multi-Project Configuration
+
+GSD supports hierarchical configuration with global defaults and per-project overrides.
+
+**Two config scopes:**
+
+1. **Global config** — `.planning/config.json` (provides defaults for all projects)
+2. **Project config** — `.planning/projects/<name>/config.json` (sparse overrides)
+
+**Resolution:** Shallow merge with project config values winning for matching keys.
+
+**Example:**
+
+Global config (`.planning/config.json`):
+```json
+{
+  "mode": "yolo",
+  "model_profile": "balanced",
+  "workflow.research": true,
+  "workflow.plan_check": true,
+  "workflow.verifier": true
+}
+```
+
+Project config (`.planning/projects/critical-feature/config.json`):
+```json
+{
+  "mode": "careful",
+  "model_profile": "quality"
+}
+```
+
+Effective config for `critical-feature` project:
+```json
+{
+  "mode": "careful",             // ← from project (overridden)
+  "model_profile": "quality",    // ← from project (overridden)
+  "workflow.research": true,     // ← from global (inherited)
+  "workflow.plan_check": true,   // ← from global (inherited)
+  "workflow.verifier": true      // ← from global (inherited)
+}
+```
+
+**Key benefits of flat format:** Overriding `"mode"` in project config doesn't affect `"workflow.research"` or other settings. Each dot-notation key is independent.
+
+**For complete resolution algorithm:** See @config-resolution.md
+
+**Global-only setting:** `planning.search_gitignored` cannot be overridden per-project (affects repo-level search behavior).
+
+</multi_project_config>
 
 <commit_docs_behavior>
 
@@ -36,11 +113,22 @@ Configuration options for `.planning/` directory behavior.
 - User must add `.planning/` to `.gitignore`
 - Useful for: OSS contributions, client projects, keeping planning private
 
-**Checking the config:**
+**Checking the config (multi-project resolution):**
 
 ```bash
-# Check config.json first
-COMMIT_DOCS=$(cat .planning/config.json 2>/dev/null | grep -o '"commit_docs"[[:space:]]*:[[:space:]]*[^,}]*' | grep -o 'true\|false' || echo "true")
+# Multi-project config resolution
+GLOBAL_CONFIG=$(cat .planning/config.json 2>/dev/null || echo "{}")
+PROJECT_CONFIG="{}"
+if [ -f .planning/.active ]; then
+  ACTIVE_PROJECT=$(cat .planning/.active | tr -d '[:space:]')
+  if [ -n "$ACTIVE_PROJECT" ] && [ -f ".planning/projects/$ACTIVE_PROJECT/config.json" ]; then
+    PROJECT_CONFIG=$(cat ".planning/projects/$ACTIVE_PROJECT/config.json")
+  fi
+fi
+
+# Shallow merge and extract commit_docs
+MERGED=$(jq -s '.[0] * .[1]' <(echo "$GLOBAL_CONFIG") <(echo "$PROJECT_CONFIG"))
+COMMIT_DOCS=$(echo "$MERGED" | jq -r '.commit_docs // true')
 
 # Auto-detect gitignored (overrides config)
 git check-ignore -q .planning 2>/dev/null && COMMIT_DOCS=false
@@ -134,17 +222,26 @@ To use uncommitted mode:
 | `{slug}` | Both | Lowercase, hyphenated name |
 | `{milestone}` | milestone_branch_template | Milestone version (e.g., "v1.0") |
 
-**Checking the config:**
+**Checking the config (multi-project resolution):**
 
 ```bash
-# Get branching strategy (default: none)
-BRANCHING_STRATEGY=$(cat .planning/config.json 2>/dev/null | grep -o '"branching_strategy"[[:space:]]*:[[:space:]]*"[^"]*"' | sed 's/.*:.*"\([^"]*\)"/\1/' || echo "none")
+# Multi-project config resolution
+GLOBAL_CONFIG=$(cat .planning/config.json 2>/dev/null || echo "{}")
+PROJECT_CONFIG="{}"
+if [ -f .planning/.active ]; then
+  ACTIVE_PROJECT=$(cat .planning/.active | tr -d '[:space:]')
+  if [ -n "$ACTIVE_PROJECT" ] && [ -f ".planning/projects/$ACTIVE_PROJECT/config.json" ]; then
+    PROJECT_CONFIG=$(cat ".planning/projects/$ACTIVE_PROJECT/config.json")
+  fi
+fi
 
-# Get phase branch template
-PHASE_BRANCH_TEMPLATE=$(cat .planning/config.json 2>/dev/null | grep -o '"phase_branch_template"[[:space:]]*:[[:space:]]*"[^"]*"' | sed 's/.*:.*"\([^"]*\)"/\1/' || echo "gsd/phase-{phase}-{slug}")
+# Shallow merge (use flat key access with bracket syntax for dot-notation)
+MERGED=$(jq -s '.[0] * .[1]' <(echo "$GLOBAL_CONFIG") <(echo "$PROJECT_CONFIG"))
 
-# Get milestone branch template
-MILESTONE_BRANCH_TEMPLATE=$(cat .planning/config.json 2>/dev/null | grep -o '"milestone_branch_template"[[:space:]]*:[[:space:]]*"[^"]*"' | sed 's/.*:.*"\([^"]*\)"/\1/' || echo "gsd/{milestone}-{slug}")
+# Extract branching settings
+BRANCHING_STRATEGY=$(echo "$MERGED" | jq -r '.["git.branching_strategy"] // "none"')
+PHASE_BRANCH_TEMPLATE=$(echo "$MERGED" | jq -r '.["git.phase_branch_template"] // "gsd/phase-{phase}-{slug}"')
+MILESTONE_BRANCH_TEMPLATE=$(echo "$MERGED" | jq -r '.["git.milestone_branch_template"] // "gsd/{milestone}-{slug}"')
 ```
 
 **Branch creation:**
