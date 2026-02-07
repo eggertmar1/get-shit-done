@@ -15,7 +15,7 @@ Decimal phases appear between their surrounding integers in numeric order.
 - [x] **Phase 1: Foundation & Migration** - Establish multi-project infrastructure with transparent backwards compatibility
 - [x] **Phase 2: Project Commands** - Deliver create, switch, list, archive operations
 - [x] **Phase 3: Configuration & Context** - Enable per-project config overrides and git intelligence
-- [ ] **Phase 4: Integration** - Verify system-wide compatibility across all commands and runtimes
+- [x] **Phase 4: Integration** - Verify system-wide compatibility across all commands and runtimes
 
 ## Phase Details
 
@@ -75,8 +75,8 @@ Plans:
 **Plans**: 2 plans
 
 Plans:
-- [ ] 04-01: Gitignore .active + integrate path resolution into 3 core workflows and 3 core agents
-- [ ] 04-02: Integrate remaining 9 workflows, 8 agents, ~19 commands + cross-runtime verification
+- [x] 04-01: Gitignore .active + integrate path resolution into 3 core workflows and 3 core agents
+- [x] 04-02: Integrate remaining 9 workflows, 8 agents, ~19 commands + cross-runtime verification
 
 ## Progress
 
@@ -88,4 +88,4 @@ Phases execute in numeric order: 1 → 2 → 3 → 4
 | 1. Foundation & Migration | 2/2 | Complete | 2026-02-04 |
 | 2. Project Commands | 3/3 | Complete | 2026-02-06 |
 | 3. Configuration & Context | 1/1 | Complete | 2026-02-07 |
-| 4. Integration | 0/2 | Not started | - |
+| 4. Integration | 2/2 | Complete | 2026-02-07 |

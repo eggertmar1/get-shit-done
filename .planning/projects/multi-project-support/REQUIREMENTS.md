@@ -19,11 +19,11 @@ Requirements for initial release. Each maps to roadmap phases.
 
 ### Structure
 
-- [ ] **STRUCT-01**: Each project has isolated directory at `.planning/projects/<name>/`
-- [ ] **STRUCT-02**: Project directories contain PROJECT.md, ROADMAP.md, STATE.md, config.json, research/, phases/
-- [ ] **STRUCT-03**: Codebase map is shared at `.planning/codebase/` (not per-project)
-- [ ] **STRUCT-04**: Existing flat `.planning/` structure can be migrated via `/gsd:new-project`
-- [ ] **STRUCT-05**: Migration preserves all existing files and git history
+- [x] **STRUCT-01**: Each project has isolated directory at `.planning/projects/<name>/`
+- [x] **STRUCT-02**: Project directories contain PROJECT.md, ROADMAP.md, STATE.md, config.json, research/, phases/
+- [x] **STRUCT-03**: Codebase map is shared at `.planning/codebase/` (not per-project)
+- [x] **STRUCT-04**: Existing flat `.planning/` structure can be migrated via `/gsd:new-project`
+- [x] **STRUCT-05**: Migration preserves all existing files and git history
 
 ### Configuration
 
@@ -33,9 +33,9 @@ Requirements for initial release. Each maps to roadmap phases.
 
 ### Integration
 
-- [ ] **INTEG-01**: All existing `/gsd:*` commands work with active project context
-- [ ] **INTEG-02**: `.active` file is gitignored to prevent merge conflicts
-- [ ] **INTEG-03**: Works across Claude Code, OpenCode, and Gemini runtimes
+- [x] **INTEG-01**: All existing `/gsd:*` commands work with active project context
+- [x] **INTEG-02**: `.active` file is gitignored to prevent merge conflicts
+- [x] **INTEG-03**: Works across Claude Code, OpenCode, and Gemini runtimes
 
 ## v2 Requirements
 
@@ -94,9 +94,9 @@ Which phases cover which requirements. Updated during roadmap creation.
 | CONFIG-01 | Phase 3 | Complete |
 | CONFIG-02 | Phase 3 | Complete |
 | CONFIG-03 | Phase 3 | Complete |
-| INTEG-01 | Phase 4 | Pending |
-| INTEG-02 | Phase 4 | Pending |
-| INTEG-03 | Phase 4 | Pending |
+| INTEG-01 | Phase 4 | Complete |
+| INTEG-02 | Phase 4 | Complete |
+| INTEG-03 | Phase 4 | Complete |
 
 **Coverage:**
 - v1 requirements: 18 total
@@ -105,4 +105,4 @@ Which phases cover which requirements. Updated during roadmap creation.
 
 ---
 *Requirements defined: 2026-02-04*
-*Last updated: 2026-02-07 after Phase 3 completion*
+*Last updated: 2026-02-07 after Phase 4 completion*
