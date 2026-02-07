@@ -13,7 +13,7 @@ This roadmap transforms GSD from single-project to multi-project by restructurin
 Decimal phases appear between their surrounding integers in numeric order.
 
 - [x] **Phase 1: Foundation & Migration** - Establish multi-project infrastructure with transparent backwards compatibility
-- [ ] **Phase 2: Project Commands** - Deliver create, switch, list, archive operations
+- [x] **Phase 2: Project Commands** - Deliver create, switch, list, archive operations
 - [ ] **Phase 3: Configuration & Context** - Enable per-project config overrides and git intelligence
 - [ ] **Phase 4: Integration** - Verify system-wide compatibility across all commands and runtimes
 
@@ -62,7 +62,7 @@ Plans:
 **Plans**: 1 plan
 
 Plans:
-- [ ] 03-01: Build config merger with hierarchical override system
+- [ ] 03-01-PLAN.md — Config merger specification, flattened schema, and scope-aware settings command
 
 ### Phase 4: Integration
 **Goal**: Multi-project works across all GSD commands and runtimes
