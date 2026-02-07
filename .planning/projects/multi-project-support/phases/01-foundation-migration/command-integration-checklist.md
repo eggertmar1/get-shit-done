@@ -17,7 +17,7 @@
 
 Workflows that read/write `.planning/` paths and need path resolution updates.
 
-### [ ] execute-plan.md
+### [x] execute-plan.md
 
 **Priority:** HIGH
 
@@ -44,7 +44,7 @@ Workflows that read/write `.planning/` paths and need path resolution updates.
 
 ---
 
-### [ ] resume-project.md
+### [x] resume-project.md
 
 **Priority:** HIGH
 
@@ -69,7 +69,7 @@ Workflows that read/write `.planning/` paths and need path resolution updates.
 
 ---
 
-### [ ] map-codebase.md
+### [x] map-codebase.md
 
 **Priority:** MEDIUM
 
@@ -95,7 +95,7 @@ Workflows that read/write `.planning/` paths and need path resolution updates.
 
 ---
 
-### [ ] complete-milestone.md
+### [x] complete-milestone.md
 
 **Priority:** MEDIUM
 
@@ -119,7 +119,7 @@ Workflows that read/write `.planning/` paths and need path resolution updates.
 
 ---
 
-### [ ] transition.md
+### [x] transition.md
 
 **Priority:** MEDIUM
 
@@ -140,7 +140,7 @@ Workflows that read/write `.planning/` paths and need path resolution updates.
 
 ---
 
-### [ ] execute-phase.md
+### [x] execute-phase.md
 
 **Priority:** HIGH
 
@@ -161,7 +161,7 @@ Workflows that read/write `.planning/` paths and need path resolution updates.
 
 ---
 
-### [ ] discovery-phase.md
+### [x] discovery-phase.md
 
 **Priority:** MEDIUM
 
@@ -181,7 +181,7 @@ Workflows that read/write `.planning/` paths and need path resolution updates.
 
 ---
 
-### [ ] discuss-phase.md
+### [x] discuss-phase.md
 
 **Priority:** MEDIUM
 
@@ -201,7 +201,7 @@ Workflows that read/write `.planning/` paths and need path resolution updates.
 
 ---
 
-### [ ] verify-phase.md
+### [x] verify-phase.md
 
 **Priority:** LOW
 
@@ -221,7 +221,7 @@ Workflows that read/write `.planning/` paths and need path resolution updates.
 
 ---
 
-### [ ] verify-work.md
+### [x] verify-work.md
 
 **Priority:** LOW
 
@@ -242,7 +242,7 @@ Workflows that read/write `.planning/` paths and need path resolution updates.
 
 ---
 
-### [ ] diagnose-issues.md
+### [x] diagnose-issues.md
 
 **Priority:** LOW
 
@@ -262,7 +262,7 @@ Workflows that read/write `.planning/` paths and need path resolution updates.
 
 ---
 
-### [ ] list-phase-assumptions.md
+### [x] list-phase-assumptions.md
 
 **Priority:** LOW
 
@@ -284,7 +284,7 @@ Workflows that read/write `.planning/` paths and need path resolution updates.
 
 Agent specifications that reference `.planning/` paths.
 
-### [ ] gsd-executor.md
+### [x] gsd-executor.md
 
 **Priority:** HIGH
 
@@ -306,7 +306,7 @@ Agent specifications that reference `.planning/` paths.
 
 ---
 
-### [ ] gsd-planner.md
+### [x] gsd-planner.md
 
 **Priority:** HIGH
 
@@ -329,7 +329,7 @@ Agent specifications that reference `.planning/` paths.
 
 ---
 
-### [ ] gsd-roadmapper.md
+### [x] gsd-roadmapper.md
 
 **Priority:** HIGH
 
@@ -351,7 +351,7 @@ Agent specifications that reference `.planning/` paths.
 
 ---
 
-### [ ] gsd-phase-researcher.md
+### [x] gsd-phase-researcher.md
 
 **Priority:** MEDIUM
 
@@ -373,7 +373,7 @@ Agent specifications that reference `.planning/` paths.
 
 ---
 
-### [ ] gsd-project-researcher.md
+### [x] gsd-project-researcher.md
 
 **Priority:** MEDIUM
 
@@ -395,7 +395,7 @@ Agent specifications that reference `.planning/` paths.
 
 ---
 
-### [ ] gsd-research-synthesizer.md
+### [x] gsd-research-synthesizer.md
 
 **Priority:** MEDIUM
 
@@ -415,7 +415,7 @@ Agent specifications that reference `.planning/` paths.
 
 ---
 
-### [ ] gsd-verifier.md
+### [x] gsd-verifier.md
 
 **Priority:** LOW
 
@@ -436,7 +436,7 @@ Agent specifications that reference `.planning/` paths.
 
 ---
 
-### [ ] gsd-plan-checker.md
+### [x] gsd-plan-checker.md
 
 **Priority:** LOW
 
@@ -456,7 +456,7 @@ Agent specifications that reference `.planning/` paths.
 
 ---
 
-### [ ] gsd-integration-checker.md
+### [x] gsd-integration-checker.md
 
 **Priority:** LOW
 
@@ -476,7 +476,7 @@ Agent specifications that reference `.planning/` paths.
 
 ---
 
-### [ ] gsd-codebase-mapper.md
+### [x] gsd-codebase-mapper.md
 
 **Priority:** MEDIUM
 
@@ -494,7 +494,7 @@ Agent specifications that reference `.planning/` paths.
 
 ---
 
-### [ ] gsd-debugger.md
+### [x] gsd-debugger.md
 
 **Priority:** LOW
 
@@ -620,14 +620,21 @@ After integrating path resolution into a workflow/agent:
 
 **Total items:** 24 (12 workflows + 11 agents + 1 command section)
 
-**Completed:** 0
+**Completed:** 24
 
-**Progress:** [░░░░░░░░░░] 0%
+**Progress:** [██████████] 100%
 
-This checklist will be marked complete in Phase 4 when all workflows, agents, and commands have been updated with path resolution support.
+Integration complete! All workflows, agents, and commands have been updated with path resolution support.
+
+**Summary:**
+- ✓ 12 workflows integrated (9 in Plan 02, 3 in Plan 01)
+- ✓ 11 agents integrated (8 in Plan 02, 3 in Plan 01)
+- ✓ 19+ command orchestrators integrated (Plan 02)
+
+**Cross-runtime compatibility:** All integration snippets use POSIX-compliant bash (no bashisms). Works across Claude Code, OpenCode, and Gemini runtimes.
 
 ---
 
 *Created: Phase 01 Plan 01*
-*Last Updated: 2026-02-04*
-*Owner: Phase 4 Integration Work*
+*Last Updated: 2026-02-07*
+*Owner: Phase 4 Integration Work - COMPLETE*
