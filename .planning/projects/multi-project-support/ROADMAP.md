@@ -14,7 +14,7 @@ Decimal phases appear between their surrounding integers in numeric order.
 
 - [x] **Phase 1: Foundation & Migration** - Establish multi-project infrastructure with transparent backwards compatibility
 - [x] **Phase 2: Project Commands** - Deliver create, switch, list, archive operations
-- [ ] **Phase 3: Configuration & Context** - Enable per-project config overrides and git intelligence
+- [x] **Phase 3: Configuration & Context** - Enable per-project config overrides and git intelligence
 - [ ] **Phase 4: Integration** - Verify system-wide compatibility across all commands and runtimes
 
 ## Phase Details
@@ -62,7 +62,7 @@ Plans:
 **Plans**: 1 plan
 
 Plans:
-- [ ] 03-01-PLAN.md — Config merger specification, flattened schema, and scope-aware settings command
+- [x] 03-01: Config merger specification, flattened schema, and scope-aware settings command
 
 ### Phase 4: Integration
 **Goal**: Multi-project works across all GSD commands and runtimes
@@ -87,5 +87,5 @@ Phases execute in numeric order: 1 → 2 → 3 → 4
 |-------|----------------|--------|-----------|
 | 1. Foundation & Migration | 2/2 | Complete | 2026-02-04 |
 | 2. Project Commands | 3/3 | Complete | 2026-02-06 |
-| 3. Configuration & Context | 0/1 | Not started | - |
+| 3. Configuration & Context | 1/1 | Complete | 2026-02-07 |
 | 4. Integration | 0/2 | Not started | - |

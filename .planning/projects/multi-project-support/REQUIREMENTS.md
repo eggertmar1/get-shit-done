@@ -27,9 +27,9 @@ Requirements for initial release. Each maps to roadmap phases.
 
 ### Configuration
 
-- [ ] **CONFIG-01**: Global config lives at `.planning/config.json`
-- [ ] **CONFIG-02**: Per-project config at `projects/<name>/config.json` overrides global
-- [ ] **CONFIG-03**: Config merge is shallow (project values replace global values)
+- [x] **CONFIG-01**: Global config lives at `.planning/config.json`
+- [x] **CONFIG-02**: Per-project config at `projects/<name>/config.json` overrides global
+- [x] **CONFIG-03**: Config merge is shallow (project values replace global values)
 
 ### Integration
 
@@ -91,9 +91,9 @@ Which phases cover which requirements. Updated during roadmap creation.
 | STRUCT-03 | Phase 1 | Complete |
 | STRUCT-04 | Phase 1 | Complete |
 | STRUCT-05 | Phase 1 | Complete |
-| CONFIG-01 | Phase 3 | Pending |
-| CONFIG-02 | Phase 3 | Pending |
-| CONFIG-03 | Phase 3 | Pending |
+| CONFIG-01 | Phase 3 | Complete |
+| CONFIG-02 | Phase 3 | Complete |
+| CONFIG-03 | Phase 3 | Complete |
 | INTEG-01 | Phase 4 | Pending |
 | INTEG-02 | Phase 4 | Pending |
 | INTEG-03 | Phase 4 | Pending |
@@ -105,4 +105,4 @@ Which phases cover which requirements. Updated during roadmap creation.
 
 ---
 *Requirements defined: 2026-02-04*
-*Last updated: 2026-02-06 after Phase 2 completion*
+*Last updated: 2026-02-07 after Phase 3 completion*
