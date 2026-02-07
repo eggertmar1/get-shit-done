@@ -5,23 +5,23 @@
 See: .planning/PROJECT.md (updated 2026-02-04)
 
 **Core value:** Multiple people can work on different things simultaneously in the same repo, with full visibility into each other's planning documents.
-**Current focus:** Configuration & Context
+**Current focus:** Integration
 
 ## Current Position
 
-Phase: 3 of 4 (Configuration & Context)
+Phase: 4 of 4 (Integration)
 Plan: 1 of 1 in current phase
-Status: Phase complete
-Last activity: 2026-02-07 — Completed 03-01-PLAN.md
+Status: In progress
+Last activity: 2026-02-07 — Completed 04-01-PLAN.md
 
-Progress: [████████░░] 77%
+Progress: [█████████░] 87%
 
 ## Performance Metrics
 
 **Velocity:**
-- Total plans completed: 6
+- Total plans completed: 7
 - Average duration: 5 min
-- Total execution time: 0.5 hours
+- Total execution time: 0.6 hours
 
 **By Phase:**
 
@@ -30,10 +30,11 @@ Progress: [████████░░] 77%
 | 01-foundation-migration | 2/2 | 23min | 11.5min |
 | 02-project-commands | 3/3 | 3min | 1min |
 | 03-configuration-context | 1/1 | 6min | 6min |
+| 04-integration | 1/1 | 8min | 8min |
 
 **Recent Trend:**
-- Last 5 plans: 18min, 1min, 1min, 1min, 6min
-- Trend: Stable execution (mix of doc and implementation)
+- Last 5 plans: 1min, 1min, 1min, 6min, 8min
+- Trend: Stable execution with recent implementation work
 
 *Updated after each plan completion*
 
@@ -63,6 +64,9 @@ Recent decisions affecting current work:
 | Flat dot-notation keys instead of nested | 03-01 | 2026-02-07 | Prevents shallow merge from losing sibling keys |
 | Lazy project config creation | 03-01 | 2026-02-07 | Only create config.json on first override |
 | Config provenance tracking | 03-01 | 2026-02-07 | Users see which values are global vs overridden |
+| Gitignore .active before integration | 04-01 | 2026-02-07 | Prevents merge conflicts in multi-user scenarios |
+| Update agents at ~/.claude/agents/ in-place | 04-01 | 2026-02-07 | Agents live outside repo, updated at filesystem locations |
+| Preserve shared paths at .planning/ root | 04-01 | 2026-02-07 | codebase/ and config.json apply to entire repo |
 
 ### Pending Todos
 
@@ -79,6 +83,6 @@ None yet.
 ## Session Continuity
 
 Last session: 2026-02-07
-Stopped at: Completed Phase 3 (configuration resolution and scope-aware settings)
+Stopped at: Completed 04-01-PLAN.md (Core integration - 6 highest-priority components)
 Resume file: None
-Next: Phase 4 (04-01-PLAN.md - Integration)
+Next: Phase complete - all priority integration work done
