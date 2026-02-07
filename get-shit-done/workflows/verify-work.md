@@ -1,3 +1,8 @@
+<execution_context>
+@get-shit-done/references/path-resolution.md
+@get-shit-done/references/active-project-validation.md
+</execution_context>
+
 <purpose>
 Validate built features through conversational testing with persistent state. Creates UAT.md that tracks test progress, survives /clear, and feeds gaps into /gsd:plan-phase --gaps.
 
@@ -20,11 +25,33 @@ No Pass/Fail buttons. No severity questions. Just: "Here's what should happen. D
 
 <process>
 
-<step name="resolve_model_profile" priority="first">
-Read model profile for agent spawning:
+<step name="resolve_paths" priority="first">
+Detect structure and resolve project-specific paths:
 
 ```bash
-MODEL_PROFILE=$(cat .planning/config.json 2>/dev/null | grep -o '"model_profile"[[:space:]]*:[[:space:]]*"[^"]*"' | grep -o '"[^"]*"$' | tr -d '"' || echo "balanced")
+# Check if multi-project structure exists
+if [ -d .planning/projects/ ]; then
+  if [ ! -f .planning/.active ]; then
+    echo "No active project set."
+    exit 1
+  fi
+
+  ACTIVE_PROJECT=$(cat .planning/.active | tr -d '[:space:]')
+  if [ -z "$ACTIVE_PROJECT" ] || [ ! -d ".planning/projects/$ACTIVE_PROJECT" ]; then
+    echo "Error: Active project invalid or not found."
+    exit 1
+  fi
+
+  PROJECT_BASE=".planning/projects/$ACTIVE_PROJECT"
+else
+  PROJECT_BASE=".planning"
+fi
+
+# Shared paths
+GLOBAL_CONFIG=".planning/config.json"
+
+# Read model profile for agent spawning
+MODEL_PROFILE=$(cat "$GLOBAL_CONFIG" 2>/dev/null | grep -o '"model_profile"[[:space:]]*:[[:space:]]*"[^"]*"' | grep -o '"[^"]*"$' | tr -d '"' || echo "balanced")
 ```
 
 Default to "balanced" if not set.
@@ -43,7 +70,7 @@ Store resolved models for use in Task calls below.
 **First: Check for active UAT sessions**
 
 ```bash
-find .planning/phases -name "*-UAT.md" -type f 2>/dev/null | head -5
+find "$PROJECT_BASE/phases" -name "*-UAT.md" -type f 2>/dev/null | head -5
 ```
 
 **If active sessions exist AND no $ARGUMENTS provided:**
@@ -94,7 +121,7 @@ Parse $ARGUMENTS as phase number (e.g., "4") or plan number (e.g., "04-02").
 ```bash
 # Find phase directory (match both zero-padded and unpadded)
 PADDED_PHASE=$(printf "%02d" ${PHASE_ARG} 2>/dev/null || echo "${PHASE_ARG}")
-PHASE_DIR=$(ls -d .planning/phases/${PADDED_PHASE}-* .planning/phases/${PHASE_ARG}-* 2>/dev/null | head -1)
+PHASE_DIR=$(ls -d "$PROJECT_BASE/phases/${PADDED_PHASE}-"* "$PROJECT_BASE/phases/${PHASE_ARG}-"* 2>/dev/null | head -1)
 
 # Find SUMMARY files
 ls "$PHASE_DIR"/*-SUMMARY.md 2>/dev/null
@@ -178,7 +205,7 @@ skipped: 0
 [none yet]
 ```
 
-Write to `.planning/phases/XX-name/{phase}-UAT.md`
+Write to `$PROJECT_BASE/phases/XX-name/{phase}-UAT.md`
 
 Proceed to `present_test`.
 </step>
@@ -307,7 +334,7 @@ Clear Current Test section:
 **Check planning config:**
 
 ```bash
-COMMIT_PLANNING_DOCS=$(cat .planning/config.json 2>/dev/null | grep -o '"commit_docs"[[:space:]]*:[[:space:]]*[^,}]*' | grep -o 'true\|false' || echo "true")
+COMMIT_PLANNING_DOCS=$(cat "$GLOBAL_CONFIG" 2>/dev/null | grep -o '"commit_docs"[[:space:]]*:[[:space:]]*[^,}]*' | grep -o 'true\|false' || echo "true")
 git check-ignore -q .planning 2>/dev/null && COMMIT_PLANNING_DOCS=false
 ```
 
@@ -317,7 +344,7 @@ git check-ignore -q .planning 2>/dev/null && COMMIT_PLANNING_DOCS=false
 
 Commit the UAT file:
 ```bash
-git add ".planning/phases/XX-name/{phase}-UAT.md"
+git add "$PROJECT_BASE/phases/XX-name/{phase}-UAT.md"
 git commit -m "test({phase}): complete UAT - {passed} passed, {issues} issues"
 ```
 

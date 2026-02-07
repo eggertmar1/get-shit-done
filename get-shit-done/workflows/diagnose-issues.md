@@ -1,3 +1,8 @@
+<execution_context>
+@get-shit-done/references/path-resolution.md
+@get-shit-done/references/active-project-validation.md
+</execution_context>
+
 <purpose>
 Orchestrate parallel debug agents to investigate UAT gaps and find root causes.
 
@@ -7,9 +12,9 @@ Orchestrator stays lean: parse gaps, spawn agents, collect results, update UAT.
 </purpose>
 
 <paths>
-DEBUG_DIR=.planning/debug
+DEBUG_DIR=$PROJECT_BASE/debug
 
-Debug files use the `.planning/debug/` path (hidden directory with leading dot).
+Debug files use the `$PROJECT_BASE/debug/` path (hidden directory with leading dot).
 </paths>
 
 <core_principle>
@@ -22,6 +27,37 @@ With diagnosis: "Comment doesn't refresh" → "useEffect missing dependency" →
 </core_principle>
 
 <process>
+
+<step name="resolve_paths" priority="first">
+Detect structure and resolve project-specific paths:
+
+```bash
+# Check if multi-project structure exists
+if [ -d .planning/projects/ ]; then
+  if [ ! -f .planning/.active ]; then
+    echo "No active project set."
+    exit 1
+  fi
+
+  ACTIVE_PROJECT=$(cat .planning/.active | tr -d '[:space:]')
+  if [ -z "$ACTIVE_PROJECT" ] || [ ! -d ".planning/projects/$ACTIVE_PROJECT" ]; then
+    echo "Error: Active project invalid or not found."
+    exit 1
+  fi
+
+  PROJECT_BASE=".planning/projects/$ACTIVE_PROJECT"
+else
+  PROJECT_BASE=".planning"
+fi
+
+# Shared paths
+GLOBAL_CONFIG=".planning/config.json"
+
+# Debug directory (project-specific)
+DEBUG_DIR="$PROJECT_BASE/debug"
+```
+
+</step>
 
 <step name="parse_gaps">
 **Extract gaps from UAT.md:**
@@ -151,7 +187,7 @@ For each gap in the Gaps section, add artifacts and missing fields:
   missing:
     - "Add commentCount to useEffect dependency array"
     - "Trigger re-render when new comment added"
-  debug_session: .planning/debug/comment-not-refreshing.md
+  debug_session: $PROJECT_BASE/debug/comment-not-refreshing.md
 ```
 
 Update status in frontmatter to "diagnosed".
@@ -159,7 +195,7 @@ Update status in frontmatter to "diagnosed".
 **Check planning config:**
 
 ```bash
-COMMIT_PLANNING_DOCS=$(cat .planning/config.json 2>/dev/null | grep -o '"commit_docs"[[:space:]]*:[[:space:]]*[^,}]*' | grep -o 'true\|false' || echo "true")
+COMMIT_PLANNING_DOCS=$(cat "$GLOBAL_CONFIG" 2>/dev/null | grep -o '"commit_docs"[[:space:]]*:[[:space:]]*[^,}]*' | grep -o 'true\|false' || echo "true")
 git check-ignore -q .planning 2>/dev/null && COMMIT_PLANNING_DOCS=false
 ```
 
@@ -169,7 +205,7 @@ git check-ignore -q .planning 2>/dev/null && COMMIT_PLANNING_DOCS=false
 
 Commit the updated UAT.md:
 ```bash
-git add ".planning/phases/XX-name/{phase}-UAT.md"
+git add "$PROJECT_BASE/phases/XX-name/{phase}-UAT.md"
 git commit -m "docs({phase}): add root causes from diagnosis"
 ```
 </step>

@@ -1,10 +1,15 @@
+<execution_context>
+@get-shit-done/references/path-resolution.md
+@get-shit-done/references/active-project-validation.md
+</execution_context>
+
 <required_reading>
 
 **Read these files NOW:**
 
-1. `.planning/STATE.md`
-2. `.planning/PROJECT.md`
-3. `.planning/ROADMAP.md`
+1. `$PROJECT_BASE/STATE.md`
+2. `$PROJECT_BASE/PROJECT.md`
+3. `$PROJECT_BASE/ROADMAP.md`
 4. Current phase's plan files (`*-PLAN.md`)
 5. Current phase's summary files (`*-SUMMARY.md`)
 
@@ -20,13 +25,49 @@ Mark current phase complete and advance to next. This is the natural point where
 
 <process>
 
-<step name="load_project_state" priority="first">
+<step name="resolve_paths" priority="first">
 
-Before transition, read project state:
+Detect structure and resolve project-specific paths:
 
 ```bash
-cat .planning/STATE.md 2>/dev/null
-cat .planning/PROJECT.md 2>/dev/null
+# Check if multi-project structure exists
+if [ -d .planning/projects/ ]; then
+  # Multi-project mode - need active project
+  if [ ! -f .planning/.active ]; then
+    echo "No active project set."
+    echo "Available projects:"
+    ls -1 .planning/projects/ | grep -v "^\." | sed 's/^/  - /'
+    echo "Select a project with: /gsd:switch-project <name>"
+    exit 1
+  fi
+
+  ACTIVE_PROJECT=$(cat .planning/.active | tr -d '[:space:]')
+
+  if [ -z "$ACTIVE_PROJECT" ] || [ ! -d ".planning/projects/$ACTIVE_PROJECT" ]; then
+    echo "Error: Active project invalid or not found."
+    ls -1 .planning/projects/ | grep -v "^\." | sed 's/^/  - /'
+    exit 1
+  fi
+
+  PROJECT_BASE=".planning/projects/$ACTIVE_PROJECT"
+else
+  # Flat structure - use root
+  PROJECT_BASE=".planning"
+fi
+
+# Shared paths (always at root)
+GLOBAL_CONFIG=".planning/config.json"
+```
+
+</step>
+
+<step name="load_project_state">
+
+Read project state:
+
+```bash
+cat "$PROJECT_BASE/STATE.md" 2>/dev/null
+cat "$PROJECT_BASE/PROJECT.md" 2>/dev/null
 ```
 
 Parse current position to verify we're transitioning the right phase.
@@ -39,8 +80,8 @@ Note accumulated context that may need updating after transition.
 Check current phase has all plan summaries:
 
 ```bash
-ls .planning/phases/XX-current/*-PLAN.md 2>/dev/null | sort
-ls .planning/phases/XX-current/*-SUMMARY.md 2>/dev/null | sort
+ls "$PROJECT_BASE/phases/XX-current/"*-PLAN.md 2>/dev/null | sort
+ls "$PROJECT_BASE/phases/XX-current/"*-SUMMARY.md 2>/dev/null | sort
 ```
 
 **Verification logic:**
@@ -53,7 +94,7 @@ ls .planning/phases/XX-current/*-SUMMARY.md 2>/dev/null | sort
 <config-check>
 
 ```bash
-cat .planning/config.json 2>/dev/null
+cat "$GLOBAL_CONFIG" 2>/dev/null
 ```
 
 </config-check>
@@ -111,7 +152,7 @@ Wait for user decision.
 Check for lingering handoffs:
 
 ```bash
-ls .planning/phases/XX-current/.continue-here*.md 2>/dev/null
+ls "$PROJECT_BASE/phases/XX-current/.continue-here"*.md 2>/dev/null
 ```
 
 If found, delete them — phase is complete, handoffs are stale.
@@ -123,7 +164,7 @@ If found, delete them — phase is complete, handoffs are stale.
 Update the roadmap file:
 
 ```bash
-ROADMAP_FILE=".planning/ROADMAP.md"
+ROADMAP_FILE="$PROJECT_BASE/ROADMAP.md"
 ```
 
 Update the file:
@@ -168,7 +209,7 @@ Evolve PROJECT.md to reflect learnings from completed phase.
 **Read phase summaries:**
 
 ```bash
-cat .planning/phases/XX-current/*-SUMMARY.md
+cat "$PROJECT_BASE/phases/XX-current/"*-SUMMARY.md
 ```
 
 **Assess requirement changes:**
@@ -316,7 +357,7 @@ Update Project Reference section in STATE.md.
 ```markdown
 ## Project Reference
 
-See: .planning/PROJECT.md (updated [today])
+See: PROJECT.md (updated [today])
 
 **Core value:** [Current core value from PROJECT.md]
 **Current focus:** [Next phase name]

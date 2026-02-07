@@ -1,3 +1,8 @@
+<execution_context>
+@get-shit-done/references/path-resolution.md
+@get-shit-done/references/active-project-validation.md
+</execution_context>
+
 <purpose>
 Execute discovery at the appropriate depth level.
 Produces DISCOVERY.md (for Level 2-3) that informs PLAN.md creation.
@@ -32,6 +37,36 @@ See ~/.claude/get-shit-done/templates/discovery.md `<discovery_protocol>` for fu
 </source_hierarchy>
 
 <process>
+
+<step name="resolve_paths" priority="first">
+Detect structure and resolve project-specific paths:
+
+```bash
+# Check if multi-project structure exists
+if [ -d .planning/projects/ ]; then
+  if [ ! -f .planning/.active ]; then
+    echo "No active project set."
+    echo "Available projects:"
+    ls -1 .planning/projects/ | grep -v "^\." | sed 's/^/  - /'
+    exit 1
+  fi
+
+  ACTIVE_PROJECT=$(cat .planning/.active | tr -d '[:space:]')
+
+  if [ -z "$ACTIVE_PROJECT" ] || [ ! -d ".planning/projects/$ACTIVE_PROJECT" ]; then
+    echo "Error: Active project invalid or not found."
+    ls -1 .planning/projects/ | grep -v "^\." | sed 's/^/  - /'
+    exit 1
+  fi
+
+  PROJECT_BASE=".planning/projects/$ACTIVE_PROJECT"
+else
+  # Flat structure - use root
+  PROJECT_BASE=".planning"
+fi
+```
+
+</step>
 
 <step name="determine_depth">
 Check the depth parameter passed from plan-phase.md:
@@ -116,7 +151,7 @@ For: Choosing between options, new external integration.
 
 7. Return to plan-phase.md.
 
-**Output:** `.planning/phases/XX-name/DISCOVERY.md`
+**Output:** `$PROJECT_BASE/phases/XX-name/DISCOVERY.md`
 </step>
 
 <step name="level_3_deep_dive">
@@ -169,7 +204,7 @@ For: Architectural decisions, novel problems, high-risk choices.
 
 8. Return to plan-phase.md.
 
-**Output:** `.planning/phases/XX-name/DISCOVERY.md` (comprehensive)
+**Output:** `$PROJECT_BASE/phases/XX-name/DISCOVERY.md` (comprehensive)
 </step>
 
 <step name="identify_unknowns">
@@ -203,7 +238,7 @@ Run the discovery:
 </step>
 
 <step name="create_discovery_output">
-Write `.planning/phases/XX-name/DISCOVERY.md`:
+Write `$PROJECT_BASE/phases/XX-name/DISCOVERY.md`:
 - Summary with recommendation
 - Key findings with sources
 - Code examples if applicable

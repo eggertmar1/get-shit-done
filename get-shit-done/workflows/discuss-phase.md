@@ -1,3 +1,8 @@
+<execution_context>
+@get-shit-done/references/path-resolution.md
+@get-shit-done/references/active-project-validation.md
+</execution_context>
+
 <purpose>
 Extract implementation decisions that downstream agents need. Analyze the phase to identify gray areas, let the user choose what to discuss, then deep-dive each selected area until satisfied.
 
@@ -107,11 +112,44 @@ Phase: "API documentation"
 
 <process>
 
-<step name="validate_phase" priority="first">
+<step name="resolve_paths" priority="first">
+Detect structure and resolve project-specific paths:
+
+```bash
+# Check if multi-project structure exists
+if [ -d .planning/projects/ ]; then
+  if [ ! -f .planning/.active ]; then
+    echo "No active project set."
+    echo "Available projects:"
+    ls -1 .planning/projects/ | grep -v "^\." | sed 's/^/  - /'
+    exit 1
+  fi
+
+  ACTIVE_PROJECT=$(cat .planning/.active | tr -d '[:space:]')
+
+  if [ -z "$ACTIVE_PROJECT" ] || [ ! -d ".planning/projects/$ACTIVE_PROJECT" ]; then
+    echo "Error: Active project invalid or not found."
+    ls -1 .planning/projects/ | grep -v "^\." | sed 's/^/  - /'
+    exit 1
+  fi
+
+  PROJECT_BASE=".planning/projects/$ACTIVE_PROJECT"
+else
+  # Flat structure - use root
+  PROJECT_BASE=".planning"
+fi
+
+# Shared paths
+GLOBAL_CONFIG=".planning/config.json"
+```
+
+</step>
+
+<step name="validate_phase">
 Phase number from argument (required).
 
 Load and validate:
-- Read `.planning/ROADMAP.md`
+- Read `$PROJECT_BASE/ROADMAP.md`
 - Find phase entry
 - Extract: number, name, description, status
 
@@ -132,7 +170,7 @@ Check if CONTEXT.md already exists:
 ```bash
 # Match both zero-padded (05-*) and unpadded (5-*) folders
 PADDED_PHASE=$(printf "%02d" ${PHASE})
-ls .planning/phases/${PADDED_PHASE}-*/*-CONTEXT.md .planning/phases/${PHASE}-*/*-CONTEXT.md 2>/dev/null
+ls "$PROJECT_BASE/phases/${PADDED_PHASE}-"*/*-CONTEXT.md "$PROJECT_BASE/phases/${PHASE}-"*/*-CONTEXT.md 2>/dev/null
 ```
 
 **If exists:**
@@ -284,12 +322,12 @@ Create CONTEXT.md capturing decisions made.
 ```bash
 # Match existing directory (padded or unpadded)
 PADDED_PHASE=$(printf "%02d" ${PHASE})
-PHASE_DIR=$(ls -d .planning/phases/${PADDED_PHASE}-* .planning/phases/${PHASE}-* 2>/dev/null | head -1)
+PHASE_DIR=$(ls -d "$PROJECT_BASE/phases/${PADDED_PHASE}-"* "$PROJECT_BASE/phases/${PHASE}-"* 2>/dev/null | head -1)
 if [ -z "$PHASE_DIR" ]; then
   # Create from roadmap name (lowercase, hyphens)
-  PHASE_NAME=$(grep "Phase ${PHASE}:" .planning/ROADMAP.md | sed 's/.*Phase [0-9]*: //' | tr '[:upper:]' '[:lower:]' | tr ' ' '-')
-  mkdir -p ".planning/phases/${PADDED_PHASE}-${PHASE_NAME}"
-  PHASE_DIR=".planning/phases/${PADDED_PHASE}-${PHASE_NAME}"
+  PHASE_NAME=$(grep "Phase ${PHASE}:" "$PROJECT_BASE/ROADMAP.md" | sed 's/.*Phase [0-9]*: //' | tr '[:upper:]' '[:lower:]' | tr ' ' '-')
+  mkdir -p "$PROJECT_BASE/phases/${PADDED_PHASE}-${PHASE_NAME}"
+  PHASE_DIR="$PROJECT_BASE/phases/${PADDED_PHASE}-${PHASE_NAME}"
 fi
 ```
 
@@ -396,7 +434,7 @@ Commit phase context:
 **Check planning config:**
 
 ```bash
-COMMIT_PLANNING_DOCS=$(cat .planning/config.json 2>/dev/null | grep -o '"commit_docs"[[:space:]]*:[[:space:]]*[^,}]*' | grep -o 'true\|false' || echo "true")
+COMMIT_PLANNING_DOCS=$(cat "$GLOBAL_CONFIG" 2>/dev/null | grep -o '"commit_docs"[[:space:]]*:[[:space:]]*[^,}]*' | grep -o 'true\|false' || echo "true")
 git check-ignore -q .planning 2>/dev/null && COMMIT_PLANNING_DOCS=false
 ```
 

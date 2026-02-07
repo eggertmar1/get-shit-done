@@ -6,15 +6,20 @@ This is the ritual that separates "development" from "shipped."
 
 </purpose>
 
+<execution_context>
+@get-shit-done/references/path-resolution.md
+@get-shit-done/references/active-project-validation.md
+</execution_context>
+
 <required_reading>
 
 **Read these files NOW:**
 
 1. templates/milestone.md
 2. templates/milestone-archive.md
-3. `.planning/ROADMAP.md`
-4. `.planning/REQUIREMENTS.md`
-5. `.planning/PROJECT.md`
+3. `$PROJECT_BASE/ROADMAP.md`
+4. `$PROJECT_BASE/REQUIREMENTS.md`
+5. `$PROJECT_BASE/PROJECT.md`
 
 </required_reading>
 
@@ -47,13 +52,52 @@ When a milestone completes, this workflow:
 
 <process>
 
+<step name="resolve_paths">
+
+Detect structure and resolve project-specific paths:
+
+```bash
+# Check if multi-project structure exists
+if [ -d .planning/projects/ ]; then
+  # Multi-project mode - need active project
+  if [ ! -f .planning/.active ]; then
+    echo "No active project set."
+    echo ""
+    echo "Available projects:"
+    ls -1 .planning/projects/ | grep -v "^\." | sed 's/^/  - /'
+    echo ""
+    echo "Select a project with: /gsd:switch-project <name>"
+    exit 1
+  fi
+
+  ACTIVE_PROJECT=$(cat .planning/.active | tr -d '[:space:]')
+
+  if [ -z "$ACTIVE_PROJECT" ] || [ ! -d ".planning/projects/$ACTIVE_PROJECT" ]; then
+    echo "Error: Active project invalid or not found."
+    echo "Available projects:"
+    ls -1 .planning/projects/ | grep -v "^\." | sed 's/^/  - /'
+    exit 1
+  fi
+
+  PROJECT_BASE=".planning/projects/$ACTIVE_PROJECT"
+else
+  # Flat structure - use root
+  PROJECT_BASE=".planning"
+fi
+
+# Shared paths (always at root)
+GLOBAL_CONFIG=".planning/config.json"
+```
+
+</step>
+
 <step name="verify_readiness">
 
 Check if milestone is truly complete:
 
 ```bash
-cat .planning/ROADMAP.md
-ls .planning/phases/*/SUMMARY.md 2>/dev/null | wc -l
+cat "$PROJECT_BASE/ROADMAP.md"
+ls "$PROJECT_BASE/phases/"*/SUMMARY.md 2>/dev/null | wc -l
 ```
 
 **Questions to ask:**
@@ -80,7 +124,7 @@ Total: 4 phases, 8 plans, all complete
 <config-check>
 
 ```bash
-cat .planning/config.json 2>/dev/null
+cat "$GLOBAL_CONFIG" 2>/dev/null
 ```
 
 </config-check>
@@ -157,8 +201,8 @@ Milestone Stats:
 Read all phase SUMMARY.md files in milestone range:
 
 ```bash
-cat .planning/phases/01-*/01-*-SUMMARY.md
-cat .planning/phases/02-*/02-*-SUMMARY.md
+cat "$PROJECT_BASE/phases/01-"*/01-*-SUMMARY.md
+cat "$PROJECT_BASE/phases/02-"*/02-*-SUMMARY.md
 # ... for each phase in milestone
 ```
 
@@ -179,7 +223,7 @@ Key accomplishments for this milestone:
 
 <step name="create_milestone_entry">
 
-Create or update `.planning/MILESTONES.md`.
+Create or update `$PROJECT_BASE/MILESTONES.md`.
 
 If file doesn't exist:
 
@@ -227,7 +271,7 @@ Perform full PROJECT.md evolution review at milestone completion.
 **Read all phase summaries in this milestone:**
 
 ```bash
-cat .planning/phases/*-*/*-SUMMARY.md
+cat "$PROJECT_BASE/phases/"*-*/*-SUMMARY.md
 ```
 
 **Full review checklist:**
@@ -366,7 +410,7 @@ Initial user testing showed demand for shape tools.
 
 <step name="reorganize_roadmap">
 
-Update `.planning/ROADMAP.md` to group completed milestone phases.
+Update `$PROJECT_BASE/ROADMAP.md` to group completed milestone phases.
 
 Add milestone headers and collapse completed work:
 
@@ -416,7 +460,7 @@ Extract completed milestone details and create archive file.
 
 **Process:**
 
-1. Create archive file path: `.planning/milestones/v[X.Y]-ROADMAP.md`
+1. Create archive file path: `$PROJECT_BASE/milestones/v[X.Y]-ROADMAP.md`
 
 2. Read `~/.claude/get-shit-done/templates/milestone-archive.md` template
 
@@ -441,16 +485,16 @@ Extract completed milestone details and create archive file.
    - {{DECISIONS_FROM_PROJECT}} — Key decisions from PROJECT.md
    - {{ISSUES_RESOLVED_DURING_MILESTONE}} — From summaries
 
-6. Write filled template to `.planning/milestones/v[X.Y]-ROADMAP.md`
+6. Write filled template to `$PROJECT_BASE/milestones/v[X.Y]-ROADMAP.md`
 
 7. Delete ROADMAP.md (fresh one created for next milestone):
    ```bash
-   rm .planning/ROADMAP.md
+   rm "$PROJECT_BASE/ROADMAP.md"
    ```
 
 8. Verify archive exists:
    ```bash
-   ls .planning/milestones/v[X.Y]-ROADMAP.md
+   ls "$PROJECT_BASE/milestones/v[X.Y]-ROADMAP.md"
    ```
 
 9. Confirm roadmap archive complete:
@@ -460,7 +504,7 @@ Extract completed milestone details and create archive file.
    ✅ ROADMAP.md deleted (fresh one for next milestone)
    ```
 
-**Note:** Phase directories (`.planning/phases/`) are NOT deleted. They accumulate across milestones as the raw execution history. Phase numbering continues (v1.0 phases 1-4, v1.1 phases 5-8, etc.).
+**Note:** Phase directories (`$PROJECT_BASE/phases/`) are NOT deleted. They accumulate across milestones as the raw execution history. Phase numbering continues (v1.0 phases 1-4, v1.1 phases 5-8, etc.).
 
 </step>
 
@@ -472,10 +516,10 @@ Archive requirements and prepare for fresh requirements in next milestone.
 
 1. Read current REQUIREMENTS.md:
    ```bash
-   cat .planning/REQUIREMENTS.md
+   cat "$PROJECT_BASE/REQUIREMENTS.md"
    ```
 
-2. Create archive file: `.planning/milestones/v[X.Y]-REQUIREMENTS.md`
+2. Create archive file: `$PROJECT_BASE/milestones/v[X.Y]-REQUIREMENTS.md`
 
 3. Transform requirements for archive:
    - Mark all v1 requirements as `[x]` complete
@@ -494,7 +538,7 @@ Archive requirements and prepare for fresh requirements in next milestone.
    **Status:** ✅ SHIPPED
 
    This is the archived requirements specification for v[X.Y].
-   For current requirements, see `.planning/REQUIREMENTS.md` (created for next milestone).
+   For current requirements, see `REQUIREMENTS.md` (created for next milestone).
 
    ---
 
@@ -514,7 +558,7 @@ Archive requirements and prepare for fresh requirements in next milestone.
 
 5. Delete original REQUIREMENTS.md:
    ```bash
-   rm .planning/REQUIREMENTS.md
+   rm "$PROJECT_BASE/REQUIREMENTS.md"
    ```
 
 6. Confirm:
@@ -533,7 +577,7 @@ Move the milestone audit file to the archive (if it exists):
 
 ```bash
 # Move audit to milestones folder (if exists)
-[ -f .planning/v[X.Y]-MILESTONE-AUDIT.md ] && mv .planning/v[X.Y]-MILESTONE-AUDIT.md .planning/milestones/
+[ -f "$PROJECT_BASE/v[X.Y]-MILESTONE-AUDIT.md" ] && mv "$PROJECT_BASE/v[X.Y]-MILESTONE-AUDIT.md" "$PROJECT_BASE/milestones/"
 ```
 
 Confirm:
@@ -554,7 +598,7 @@ Update STATE.md to reflect milestone completion.
 ```markdown
 ## Project Reference
 
-See: .planning/PROJECT.md (updated [today])
+See: PROJECT.md (updated [today])
 
 **Core value:** [Current core value from PROJECT.md]
 **Current focus:** [Next milestone or "Planning next milestone"]
@@ -587,7 +631,7 @@ Check if branching was used and offer merge options.
 
 ```bash
 # Get branching strategy from config
-BRANCHING_STRATEGY=$(cat .planning/config.json 2>/dev/null | grep -o '"branching_strategy"[[:space:]]*:[[:space:]]*"[^"]*"' | sed 's/.*:.*"\([^"]*\)"/\1/' || echo "none")
+BRANCHING_STRATEGY=$(cat "$GLOBAL_CONFIG" 2>/dev/null | grep -o '"branching_strategy"[[:space:]]*:[[:space:]]*"[^"]*"' | sed 's/.*:.*"\([^"]*\)"/\1/' || echo "none")
 ```
 
 **If strategy is "none":** Skip to git_tag step.
@@ -595,7 +639,7 @@ BRANCHING_STRATEGY=$(cat .planning/config.json 2>/dev/null | grep -o '"branching
 **For "phase" strategy — find phase branches:**
 
 ```bash
-PHASE_BRANCH_TEMPLATE=$(cat .planning/config.json 2>/dev/null | grep -o '"phase_branch_template"[[:space:]]*:[[:space:]]*"[^"]*"' | sed 's/.*:.*"\([^"]*\)"/\1/' || echo "gsd/phase-{phase}-{slug}")
+PHASE_BRANCH_TEMPLATE=$(cat "$GLOBAL_CONFIG" 2>/dev/null | grep -o '"phase_branch_template"[[:space:]]*:[[:space:]]*"[^"]*"' | sed 's/.*:.*"\([^"]*\)"/\1/' || echo "gsd/phase-{phase}-{slug}")
 
 # Extract prefix from template (before first variable)
 BRANCH_PREFIX=$(echo "$PHASE_BRANCH_TEMPLATE" | sed 's/{.*//')
@@ -607,7 +651,7 @@ PHASE_BRANCHES=$(git branch --list "${BRANCH_PREFIX}*" 2>/dev/null | sed 's/^\*/
 **For "milestone" strategy — find milestone branch:**
 
 ```bash
-MILESTONE_BRANCH_TEMPLATE=$(cat .planning/config.json 2>/dev/null | grep -o '"milestone_branch_template"[[:space:]]*:[[:space:]]*"[^"]*"' | sed 's/.*:.*"\([^"]*\)"/\1/' || echo "gsd/{milestone}-{slug}")
+MILESTONE_BRANCH_TEMPLATE=$(cat "$GLOBAL_CONFIG" 2>/dev/null | grep -o '"milestone_branch_template"[[:space:]]*:[[:space:]]*"[^"]*"' | sed 's/.*:.*"\([^"]*\)"/\1/' || echo "gsd/{milestone}-{slug}")
 
 # Extract prefix from template
 BRANCH_PREFIX=$(echo "$MILESTONE_BRANCH_TEMPLATE" | sed 's/{.*//')
@@ -765,7 +809,7 @@ Commit milestone completion including archive files and deletions.
 **Check planning config:**
 
 ```bash
-COMMIT_PLANNING_DOCS=$(cat .planning/config.json 2>/dev/null | grep -o '"commit_docs"[[:space:]]*:[[:space:]]*[^,}]*' | grep -o 'true\|false' || echo "true")
+COMMIT_PLANNING_DOCS=$(cat "$GLOBAL_CONFIG" 2>/dev/null | grep -o '"commit_docs"[[:space:]]*:[[:space:]]*[^,}]*' | grep -o 'true\|false' || echo "true")
 git check-ignore -q .planning 2>/dev/null && COMMIT_PLANNING_DOCS=false
 ```
 
@@ -775,17 +819,17 @@ git check-ignore -q .planning 2>/dev/null && COMMIT_PLANNING_DOCS=false
 
 ```bash
 # Stage archive files (new)
-git add .planning/milestones/v[X.Y]-ROADMAP.md
-git add .planning/milestones/v[X.Y]-REQUIREMENTS.md
-git add .planning/milestones/v[X.Y]-MILESTONE-AUDIT.md 2>/dev/null || true
+git add "$PROJECT_BASE/milestones/v[X.Y]-ROADMAP.md"
+git add "$PROJECT_BASE/milestones/v[X.Y]-REQUIREMENTS.md"
+git add "$PROJECT_BASE/milestones/v[X.Y]-MILESTONE-AUDIT.md" 2>/dev/null || true
 
 # Stage updated files
-git add .planning/MILESTONES.md
-git add .planning/PROJECT.md
-git add .planning/STATE.md
+git add "$PROJECT_BASE/MILESTONES.md"
+git add "$PROJECT_BASE/PROJECT.md"
+git add "$PROJECT_BASE/STATE.md"
 
 # Stage deletions
-git add -u .planning/
+git add -u "$PROJECT_BASE/"
 
 # Commit with descriptive message
 git commit -m "$(cat <<'EOF'
@@ -827,7 +871,7 @@ Archived:
 - milestones/v[X.Y]-ROADMAP.md
 - milestones/v[X.Y]-REQUIREMENTS.md
 
-Summary: .planning/MILESTONES.md
+Summary: MILESTONES.md
 Tag: v[X.Y]
 
 ---

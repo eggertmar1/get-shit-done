@@ -1,3 +1,8 @@
+<execution_context>
+@get-shit-done/references/path-resolution.md
+@get-shit-done/references/active-project-validation.md
+</execution_context>
+
 <purpose>
 Verify phase goal achievement through goal-backward analysis. Check that the codebase actually delivers what the phase promised, not just that tasks were completed.
 
@@ -24,19 +29,44 @@ Then verify each level against the actual codebase.
 
 <process>
 
-<step name="load_context" priority="first">
+<step name="resolve_paths" priority="first">
+Detect structure and resolve project-specific paths:
+
+```bash
+# Check if multi-project structure exists
+if [ -d .planning/projects/ ]; then
+  if [ ! -f .planning/.active ]; then
+    echo "No active project set."
+    exit 1
+  fi
+
+  ACTIVE_PROJECT=$(cat .planning/.active | tr -d '[:space:]')
+  if [ -z "$ACTIVE_PROJECT" ] || [ ! -d ".planning/projects/$ACTIVE_PROJECT" ]; then
+    echo "Error: Active project invalid or not found."
+    exit 1
+  fi
+
+  PROJECT_BASE=".planning/projects/$ACTIVE_PROJECT"
+else
+  PROJECT_BASE=".planning"
+fi
+```
+
+</step>
+
+<step name="load_context">
 **Gather all verification context:**
 
 ```bash
 # Phase directory (match both zero-padded and unpadded)
 PADDED_PHASE=$(printf "%02d" ${PHASE_ARG} 2>/dev/null || echo "${PHASE_ARG}")
-PHASE_DIR=$(ls -d .planning/phases/${PADDED_PHASE}-* .planning/phases/${PHASE_ARG}-* 2>/dev/null | head -1)
+PHASE_DIR=$(ls -d "$PROJECT_BASE/phases/${PADDED_PHASE}-"* "$PROJECT_BASE/phases/${PHASE_ARG}-"* 2>/dev/null | head -1)
 
 # Phase goal from ROADMAP
-grep -A 5 "Phase ${PHASE_NUM}" .planning/ROADMAP.md
+grep -A 5 "Phase ${PHASE_NUM}" "$PROJECT_BASE/ROADMAP.md"
 
 # Requirements mapped to this phase
-grep -E "^| ${PHASE_NUM}" .planning/REQUIREMENTS.md 2>/dev/null
+grep -E "^| ${PHASE_NUM}" "$PROJECT_BASE/REQUIREMENTS.md" 2>/dev/null
 
 # All SUMMARY files (claims to verify)
 ls "$PHASE_DIR"/*-SUMMARY.md 2>/dev/null

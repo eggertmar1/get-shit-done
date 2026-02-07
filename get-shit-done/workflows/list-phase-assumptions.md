@@ -1,3 +1,8 @@
+<execution_context>
+@get-shit-done/references/path-resolution.md
+@get-shit-done/references/active-project-validation.md
+</execution_context>
+
 <purpose>
 Surface Claude's assumptions about a phase before planning, enabling users to correct misconceptions early.
 
@@ -6,7 +11,32 @@ Key difference from discuss-phase: This is ANALYSIS of what Claude thinks, not I
 
 <process>
 
-<step name="validate_phase" priority="first">
+<step name="resolve_paths" priority="first">
+Detect structure and resolve project-specific paths:
+
+```bash
+# Check if multi-project structure exists
+if [ -d .planning/projects/ ]; then
+  if [ ! -f .planning/.active ]; then
+    echo "No active project set."
+    exit 1
+  fi
+
+  ACTIVE_PROJECT=$(cat .planning/.active | tr -d '[:space:]')
+  if [ -z "$ACTIVE_PROJECT" ] || [ ! -d ".planning/projects/$ACTIVE_PROJECT" ]; then
+    echo "Error: Active project invalid or not found."
+    exit 1
+  fi
+
+  PROJECT_BASE=".planning/projects/$ACTIVE_PROJECT"
+else
+  PROJECT_BASE=".planning"
+fi
+```
+
+</step>
+
+<step name="validate_phase">
 Phase number: $ARGUMENTS (required)
 
 **If argument missing:**
@@ -24,7 +54,7 @@ Exit workflow.
 Validate phase exists in roadmap:
 
 ```bash
-cat .planning/ROADMAP.md | grep -i "Phase ${PHASE}"
+cat "$PROJECT_BASE/ROADMAP.md" | grep -i "Phase ${PHASE}"
 ```
 
 **If phase not found:**
